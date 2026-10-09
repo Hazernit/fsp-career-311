@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "checks": [
+    "email absent in locked PDF",
+    "phone absent in locked PDF",
+    "email present in employer-authorized PDF",
+    "phone present in employer-authorized PDF"
+  ]
+}

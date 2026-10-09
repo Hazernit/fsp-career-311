@@ -1,0 +1,440 @@
+{
+  "generatedAt": "2026-10-09T21:15:46.004Z",
+  "algorithmVersion": "fsp-evidence-match-1.0.0",
+  "testVersion": "fsp-assessment-1.0.0",
+  "seedVersion": "fsp-synthetic-portfolio-1.0.0",
+  "weights": {
+    "demonstratedSkills": 55,
+    "testConfidence": 20,
+    "context": 15,
+    "declaredSkills": 5,
+    "achievements": 5
+  },
+  "matching": {
+    "fixtureVersion": "fsp-heldout-editorial-1.0.0",
+    "protocol": "Eight held-out synthetic employer demands, independently authored relevance judgements. Same32synthetic portfolio records used for UI and benchmark; no human hiring outcomes. Labels based on task suitability rubric, not algorithm score. Relevance2and3countpositive. Grade0: crucial competence absent;1: substantial gap requiring supervision;2: usable fit with non-critical gaps;3: strong fit. Weights fixed before measurements. Labels are author judgements, not an independent external expert panel.",
+    "queries": 8,
+    "candidates": 32,
+    "positiveRelevance": "label ≥ 2",
+    "k": 5,
+    "precisionDenominator": 5,
+    "evidence": {
+      "precisionAt5": 0.675,
+      "ndcgAt5": 0.966
+    },
+    "stackBaseline": {
+      "precisionAt5": 0.525,
+      "ndcgAt5": 0.6425
+    },
+    "details": [
+      {
+        "id": "bj-fintech",
+        "ranked": [
+          "demo-c02",
+          "demo-c08",
+          "demo-c06",
+          "demo-c03",
+          "demo-c04"
+        ],
+        "baseline": [
+          "demo-c01",
+          "demo-c02",
+          "demo-c03",
+          "demo-c06",
+          "demo-c07"
+        ],
+        "evidence": {
+          "precisionAt5": 0.8,
+          "ndcgAt5": 0.9641
+        },
+        "stack": {
+          "precisionAt5": 0.6,
+          "ndcgAt5": 0.6119
+        }
+      },
+      {
+        "id": "bj-secure",
+        "ranked": [
+          "demo-c06",
+          "demo-c02",
+          "demo-c04",
+          "demo-c08",
+          "demo-c03"
+        ],
+        "baseline": [
+          "demo-c01",
+          "demo-c02",
+          "demo-c06",
+          "demo-c07",
+          "demo-c03"
+        ],
+        "evidence": {
+          "precisionAt5": 1,
+          "ndcgAt5": 1
+        },
+        "stack": {
+          "precisionAt5": 0.6,
+          "ndcgAt5": 0.5226
+        }
+      },
+      {
+        "id": "bm-catalog",
+        "ranked": [
+          "demo-c11",
+          "demo-c14",
+          "demo-c10",
+          "demo-c16",
+          "demo-c12"
+        ],
+        "baseline": [
+          "demo-c09",
+          "demo-c10",
+          "demo-c11",
+          "demo-c14",
+          "demo-c15"
+        ],
+        "evidence": {
+          "precisionAt5": 0.8,
+          "ndcgAt5": 1
+        },
+        "stack": {
+          "precisionAt5": 0.6,
+          "ndcgAt5": 0.6587
+        }
+      },
+      {
+        "id": "bm-outbox",
+        "ranked": [
+          "demo-c16",
+          "demo-c14",
+          "demo-c10",
+          "demo-c09",
+          "demo-c15"
+        ],
+        "baseline": [
+          "demo-c09",
+          "demo-c14",
+          "demo-c15",
+          "demo-c16",
+          "demo-c10"
+        ],
+        "evidence": {
+          "precisionAt5": 0.4,
+          "ndcgAt5": 0.9272
+        },
+        "stack": {
+          "precisionAt5": 0.4,
+          "ndcgAt5": 0.6785
+        }
+      },
+      {
+        "id": "fj-access",
+        "ranked": [
+          "demo-c21",
+          "demo-c22",
+          "demo-c24",
+          "demo-c23",
+          "demo-c18"
+        ],
+        "baseline": [
+          "demo-c17",
+          "demo-c21",
+          "demo-c22",
+          "demo-c23",
+          "demo-c24"
+        ],
+        "evidence": {
+          "precisionAt5": 0.6,
+          "ndcgAt5": 0.9481
+        },
+        "stack": {
+          "precisionAt5": 0.6,
+          "ndcgAt5": 0.7264
+        }
+      },
+      {
+        "id": "fj-checkout",
+        "ranked": [
+          "demo-c18",
+          "demo-c22",
+          "demo-c19",
+          "demo-c24",
+          "demo-c17"
+        ],
+        "baseline": [
+          "demo-c17",
+          "demo-c18",
+          "demo-c22",
+          "demo-c23",
+          "demo-c19"
+        ],
+        "evidence": {
+          "precisionAt5": 0.6,
+          "ndcgAt5": 0.9617
+        },
+        "stack": {
+          "precisionAt5": 0.4,
+          "ndcgAt5": 0.6046
+        }
+      },
+      {
+        "id": "fm-race",
+        "ranked": [
+          "demo-c27",
+          "demo-c30",
+          "demo-c26",
+          "demo-c32",
+          "demo-c28"
+        ],
+        "baseline": [
+          "demo-c25",
+          "demo-c26",
+          "demo-c27",
+          "demo-c30",
+          "demo-c31"
+        ],
+        "evidence": {
+          "precisionAt5": 0.8,
+          "ndcgAt5": 1
+        },
+        "stack": {
+          "precisionAt5": 0.6,
+          "ndcgAt5": 0.6587
+        }
+      },
+      {
+        "id": "fm-sensitive",
+        "ranked": [
+          "demo-c30",
+          "demo-c32",
+          "demo-c26",
+          "demo-c25",
+          "demo-c31"
+        ],
+        "baseline": [
+          "demo-c25",
+          "demo-c30",
+          "demo-c31",
+          "demo-c32",
+          "demo-c26"
+        ],
+        "evidence": {
+          "precisionAt5": 0.4,
+          "ndcgAt5": 0.9272
+        },
+        "stack": {
+          "precisionAt5": 0.4,
+          "ndcgAt5": 0.6785
+        }
+      }
+    ]
+  },
+  "assessment": {
+    "variantsChecked": 4000,
+    "questionInstancesChecked": 48000,
+    "blueprint": {
+      "questions": 12,
+      "competencies": 6,
+      "questionsPerCompetency": 2,
+      "threshold": 75,
+      "minEveryCompetency": 50,
+      "demonstratedCompetency": 100,
+      "durationSeconds": 600
+    },
+    "simulation": {
+      "profiles": 1200,
+      "attempts": 2400,
+      "overallAgreement": 0.8217,
+      "details": [
+        {
+          "category": "Backend · Junior",
+          "ability": "weak",
+          "correctAnswerProbability": 0.28,
+          "profiles": 100,
+          "agreement": 1,
+          "passRateA": 0,
+          "passRateB": 0,
+          "matrix": {
+            "fail→fail": 100,
+            "fail→pass": 0,
+            "pass→fail": 0,
+            "pass→pass": 0
+          }
+        },
+        {
+          "category": "Backend · Junior",
+          "ability": "borderline",
+          "correctAnswerProbability": 0.7,
+          "profiles": 100,
+          "agreement": 0.51,
+          "passRateA": 0.42,
+          "passRateB": 0.37,
+          "matrix": {
+            "fail→fail": 36,
+            "fail→pass": 22,
+            "pass→fail": 27,
+            "pass→pass": 15
+          }
+        },
+        {
+          "category": "Backend · Junior",
+          "ability": "strong",
+          "correctAnswerProbability": 0.95,
+          "profiles": 100,
+          "agreement": 0.96,
+          "passRateA": 0.98,
+          "passRateB": 0.98,
+          "matrix": {
+            "fail→fail": 0,
+            "fail→pass": 2,
+            "pass→fail": 2,
+            "pass→pass": 96
+          }
+        },
+        {
+          "category": "Backend · Middle",
+          "ability": "weak",
+          "correctAnswerProbability": 0.28,
+          "profiles": 100,
+          "agreement": 1,
+          "passRateA": 0,
+          "passRateB": 0,
+          "matrix": {
+            "fail→fail": 100,
+            "fail→pass": 0,
+            "pass→fail": 0,
+            "pass→pass": 0
+          }
+        },
+        {
+          "category": "Backend · Middle",
+          "ability": "borderline",
+          "correctAnswerProbability": 0.7,
+          "profiles": 100,
+          "agreement": 0.5,
+          "passRateA": 0.42,
+          "passRateB": 0.44,
+          "matrix": {
+            "fail→fail": 32,
+            "fail→pass": 26,
+            "pass→fail": 24,
+            "pass→pass": 18
+          }
+        },
+        {
+          "category": "Backend · Middle",
+          "ability": "strong",
+          "correctAnswerProbability": 0.95,
+          "profiles": 100,
+          "agreement": 0.97,
+          "passRateA": 0.99,
+          "passRateB": 0.98,
+          "matrix": {
+            "fail→fail": 0,
+            "fail→pass": 1,
+            "pass→fail": 2,
+            "pass→pass": 97
+          }
+        },
+        {
+          "category": "Frontend · Junior",
+          "ability": "weak",
+          "correctAnswerProbability": 0.28,
+          "profiles": 100,
+          "agreement": 1,
+          "passRateA": 0,
+          "passRateB": 0,
+          "matrix": {
+            "fail→fail": 100,
+            "fail→pass": 0,
+            "pass→fail": 0,
+            "pass→pass": 0
+          }
+        },
+        {
+          "category": "Frontend · Junior",
+          "ability": "borderline",
+          "correctAnswerProbability": 0.7,
+          "profiles": 100,
+          "agreement": 0.51,
+          "passRateA": 0.42,
+          "passRateB": 0.45,
+          "matrix": {
+            "fail→fail": 32,
+            "fail→pass": 26,
+            "pass→fail": 23,
+            "pass→pass": 19
+          }
+        },
+        {
+          "category": "Frontend · Junior",
+          "ability": "strong",
+          "correctAnswerProbability": 0.95,
+          "profiles": 100,
+          "agreement": 0.97,
+          "passRateA": 1,
+          "passRateB": 0.97,
+          "matrix": {
+            "fail→fail": 0,
+            "fail→pass": 0,
+            "pass→fail": 3,
+            "pass→pass": 97
+          }
+        },
+        {
+          "category": "Frontend · Middle",
+          "ability": "weak",
+          "correctAnswerProbability": 0.28,
+          "profiles": 100,
+          "agreement": 0.99,
+          "passRateA": 0.01,
+          "passRateB": 0,
+          "matrix": {
+            "fail→fail": 99,
+            "fail→pass": 0,
+            "pass→fail": 1,
+            "pass→pass": 0
+          }
+        },
+        {
+          "category": "Frontend · Middle",
+          "ability": "borderline",
+          "correctAnswerProbability": 0.7,
+          "profiles": 100,
+          "agreement": 0.47,
+          "passRateA": 0.43,
+          "passRateB": 0.52,
+          "matrix": {
+            "fail→fail": 26,
+            "fail→pass": 31,
+            "pass→fail": 22,
+            "pass→pass": 21
+          }
+        },
+        {
+          "category": "Frontend · Middle",
+          "ability": "strong",
+          "correctAnswerProbability": 0.95,
+          "profiles": 100,
+          "agreement": 0.98,
+          "passRateA": 0.98,
+          "passRateB": 1,
+          "matrix": {
+            "fail→fail": 0,
+            "fail→pass": 2,
+            "pass→fail": 0,
+            "pass→pass": 98
+          }
+        }
+      ],
+      "limitations": "Bernoulli simulation with assumed ability levels. Does not establish psychometric validity, real-human test-retest reliability, anti-cheat effectiveness, hiring outcomes or fairness. Near-threshold instability is expected for a short12itemassessment."
+    }
+  },
+  "limitations": [
+    "Synthetic records and editorial relevance labels; no real candidates or hiring outcomes.",
+    "Hold-out demands and labels were not used to select or optimize weights. Profiles overlap UI demonstration dataset; external expert replication is required.",
+    "No statistical confidence claim from eight synthetic demands.",
+    "Controlled parameters preserve coverage and task operations, not empirically calibrated item difficulty.",
+    "Multiple-choice format does not demonstrate ability to build production software."
+  ]
+}

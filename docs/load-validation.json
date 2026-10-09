@@ -1,0 +1,14 @@
+{
+  "scenario": "authenticated candidate browse on a warm local Worker and seeded SQLite/D1",
+  "total": 100,
+  "concurrency": 20,
+  "errors": 0,
+  "p50Ms": 54.5,
+  "p95Ms": 69.5,
+  "p99Ms": 78,
+  "durationMs": 298,
+  "node": "v24.19.0",
+  "platform": "darwin",
+  "generatedAt": "2026-10-09T21:11:17.548Z",
+  "limitation": "Localhost and a small synthetic portfolio; this is not a production capacity estimate."
+}

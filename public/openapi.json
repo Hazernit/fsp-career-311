@@ -1,0 +1,3666 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ФСП Карьера API",
+    "version": "1.0.0",
+    "description": "Цифровая платформа адресного подбора с тестовой категорией и контактами по согласию. Все достижения mock-fsp синтетические. Сессия приложения отдельна от границы доступа Sites. Успех под data, ошибка под error. Все изменения application/json и same-origin.",
+    "license": {
+      "name": "MIT для оригинального кода; материалы ФСП исключены",
+      "identifier": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Текущий стенд"
+    }
+  ],
+  "paths": {
+    "/api/meta": {
+      "get": {
+        "summary": "Метаданные и явно синтетический реестр",
+        "operationId": "get_meta",
+        "tags": [
+          "Общее"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Meta"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session": {
+      "get": {
+        "summary": "Текущий пользователь или null",
+        "operationId": "get_session",
+        "tags": [
+          "Общее"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/components/schemas/User"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "user"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "summary": "Регистрация с обязательным согласием",
+        "operationId": "post_auth_register",
+        "tags": [
+          "Авторизация"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Создаёт ожидающую подтверждения сессию. Демо-ящик доступен только этому пользователю. Пароль хранится с солью.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 10
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "candidate",
+                      "employer"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 1
+                  },
+                  "consentProcessing": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "email",
+                  "password",
+                  "role",
+                  "name",
+                  "consentProcessing"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Вход с паролем",
+        "operationId": "post_auth_login",
+        "tags": [
+          "Авторизация"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/verify": {
+      "post": {
+        "summary": "Подтверждение email одноразовым токеном",
+        "operationId": "post_auth_verify",
+        "tags": [
+          "Авторизация"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "pattern": "^[a-f0-9]{64}$",
+                    "minLength": 64
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/confirmation": {
+      "get": {
+        "summary": "Собственное состояние подтверждения email",
+        "operationId": "get_auth_confirmation",
+        "tags": [
+          "Авторизация"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "demoMode": {
+                          "type": "boolean"
+                        },
+                        "emailVerified": {
+                          "type": "boolean"
+                        },
+                        "confirmationUrl": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 1000,
+                              "format": "uri"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "demoMode"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Токен/ссылка выдаётся только владельцу ожидающей сессии и только в демо; реальная почта не раскрывает токен через API."
+      }
+    },
+    "/api/auth/resend": {
+      "post": {
+        "summary": "Повторная отправка своего письма",
+        "operationId": "post_auth_resend",
+        "tags": [
+          "Авторизация"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "sent": {
+                          "type": "boolean"
+                        },
+                        "emailVerified": {
+                          "type": "boolean"
+                        },
+                        "demoMode": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "sent"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Выход и отзыв текущей сессии",
+        "operationId": "post_auth_logout",
+        "tags": [
+          "Авторизация"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/demo": {
+      "post": {
+        "summary": "Вход в свою изолированную демо-пару",
+        "operationId": "post_auth_demo",
+        "tags": [
+          "Авторизация"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Доступно только в demoMode. HttpOnly fsp_demo_pair восстанавливает свою роль; fresh=true создаёт новую пару. Приватные аккаунты разных браузеров не объединяются.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "candidate",
+                      "employer"
+                    ]
+                  },
+                  "fresh": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "role"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "summary": "Собственный профиль",
+        "operationId": "get_profile",
+        "tags": [
+          "Профиль"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Profile"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Разрешённые поля своего профиля",
+        "operationId": "patch_profile",
+        "tags": [
+          "Профиль"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Profile"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Роль определяет допустимую схему. Неизвестные/служебные поля отклоняются. Отзыв публикации/обработки снимает isPublic. Подтверждённая специализация меняется через тест.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/CandidatePatch"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmployerPatch"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/pdf": {
+      "get": {
+        "summary": "Собственный PDF кандидата",
+        "operationId": "get_profile_pdf",
+        "tags": [
+          "Профиль"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только кандидат. Контакты владельца и история результатов включены."
+      }
+    },
+    "/api/fsp/link": {
+      "post": {
+        "summary": "Привязка известной синтетической записи ФСП",
+        "operationId": "post_fsp_link",
+        "tags": [
+          "Профиль"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OwnCandidateProfile"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только кандидат. mock-fsp не подтверждает реальную личность или реальный спортивный результат.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fspId": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "minLength": 1
+                  },
+                  "proofCode": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "fspId",
+                  "proofCode"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fsp/unlink": {
+      "post": {
+        "summary": "Удаление демо-привязки ФСП",
+        "operationId": "post_fsp_unlink",
+        "tags": [
+          "Профиль"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OwnCandidateProfile"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tests/start": {
+      "post": {
+        "summary": "Начать вариант своей категории",
+        "operationId": "post_tests_start",
+        "tags": [
+          "Тестирование"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Exam"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только кандидат с согласием на обработку. Одновременно одна активная попытка. Ключи и seed не выдаются. Смена подтверждённой категории через 90 дней, повтор той же категории не чаще раза в 10 минут.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "specialization": {
+                    "type": "string",
+                    "enum": [
+                      "backend",
+                      "frontend"
+                    ]
+                  },
+                  "grade": {
+                    "type": "string",
+                    "enum": [
+                      "junior",
+                      "middle"
+                    ]
+                  }
+                },
+                "required": [
+                  "specialization",
+                  "grade"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tests/current": {
+      "get": {
+        "summary": "Текущий активный тест",
+        "operationId": "get_tests_current",
+        "tags": [
+          "Тестирование"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/Exam"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tests/{id}/submit": {
+      "post": {
+        "summary": "Оценить свою неистёкшую попытку",
+        "operationId": "post_tests_id_submit",
+        "tags": [
+          "Тестирование"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TestResult"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Чужая попытка 404, истёкшая/уже отправленная 409. Только известные questionId и optionId. Пропуски считаются неправильными; провал не понижает текущий грейд.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "answers": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "maxLength": 100,
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "answers"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/tests/history": {
+      "get": {
+        "summary": "Собственная история результатов",
+        "operationId": "get_tests_history",
+        "tags": [
+          "Тестирование"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TestResult"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demands": {
+      "get": {
+        "summary": "Собственные потребности работодателя",
+        "operationId": "get_demands",
+        "tags": [
+          "Подбор"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Demand"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Создание потребности работодателя",
+        "operationId": "post_demands",
+        "tags": [
+          "Подбор"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Demand"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "description дополняет skills по открытому словарю. mustHave должны быть продемонстрированы тестом. Зарплата здесь необязательна, но пара от–до должна быть корректной.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemandInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demands/{id}": {
+      "get": {
+        "summary": "Своя потребность и сохранённый исходный снимок",
+        "operationId": "get_demands_id",
+        "tags": [
+          "Подбор"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Demand"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/demands/{id}/match": {
+      "post": {
+        "summary": "Сохранить первый объяснимый shortlist",
+        "operationId": "post_demands_id_match",
+        "tags": [
+          "Подбор"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "demand": {
+                          "$ref": "#/components/schemas/Demand"
+                        },
+                        "original": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Recommendation"
+                          }
+                        },
+                        "originalCount": {
+                          "type": "integer"
+                        },
+                        "categories": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Category"
+                          }
+                        },
+                        "algorithmVersion": {
+                          "type": "string",
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "demand",
+                        "original",
+                        "categories",
+                        "algorithmVersion"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Первый снимок сохраняется один раз. Фильтры и повторный match его не перезаписывают. Отозвавшие публикацию профили исключаются при чтении. Контакты отсутствуют.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/candidates": {
+      "get": {
+        "summary": "Каталог опубликованных подтверждённых кандидатов",
+        "operationId": "get_candidates",
+        "tags": [
+          "Подбор"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Candidate"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Работодатель. skills через запятую; отдельная выдача не перезаписывает исходный снимок. Email и телефон не включены.",
+        "parameters": [
+          {
+            "name": "specialization",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "backend",
+                "frontend"
+              ]
+            }
+          },
+          {
+            "name": "grade",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "junior",
+                "middle"
+              ]
+            }
+          },
+          {
+            "name": "skills",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          },
+          {
+            "name": "fspOnly",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "1",
+                "0"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/api/candidates/{id}": {
+      "get": {
+        "summary": "Профиль с разрешением конкретной компании",
+        "operationId": "get_candidates_id",
+        "tags": [
+          "Подбор"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Candidate"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Контакты только при accepted invitation или самостоятельном отклике этому employerId и текущем согласии на обработку. Чужое принятие не даёт доступа. Отзыв обработки возвращает 404 даже для согласованной пары. Закрытая публикация без согласованного события возвращает 404.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/candidates/{id}/pdf": {
+      "get": {
+        "summary": "PDF с теми же разрешениями на контакт",
+        "operationId": "get_candidates_id_pdf",
+        "tags": [
+          "Подбор"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            }
+          }
+        ],
+        "description": "Проверяет актуальное согласие на обработку и те же разрешения, что карточка кандидата. При отозванном согласии возвращает 404 даже после принятия или отклика."
+      }
+    },
+    "/api/invitations": {
+      "get": {
+        "summary": "Свои входящие либо исходящие приглашения",
+        "operationId": "get_invitations",
+        "tags": [
+          "Приглашения"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Invitation"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Список принадлежит текущему кандидату либо работодателю. contacts раскрывается только в accepted приглашении при актуальном согласии кандидата на обработку; после отзыва contacts=null, статус принятия сохраняется."
+      },
+      "post": {
+        "summary": "Адресное приглашение с обязательной зарплатой",
+        "operationId": "post_invitations",
+        "tags": [
+          "Приглашения"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Invitation"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только работодатель. Компания должна быть заполнена; demandId при наличии должен принадлежать ему. Зарплата целая RUB/month, salaryTo ≥ salaryFrom. Одно pending приглашение от компании этому кандидату.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invitations/{id}/respond": {
+      "post": {
+        "summary": "Ответить на своё приглашение",
+        "operationId": "post_invitations_id_respond",
+        "tags": [
+          "Приглашения"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Invitation"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только кандидат-владелец. Терминальное решение неизменяемо. Принятие адресно раскрывает контакты и требует согласия на обработку.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "accepted",
+                      "declined"
+                    ]
+                  }
+                },
+                "required": [
+                  "decision"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/vacancies": {
+      "get": {
+        "summary": "Список опубликованных вакансий",
+        "operationId": "get_vacancies",
+        "tags": [
+          "Вакансии"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Vacancy"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Опубликовать собственную потребность",
+        "operationId": "post_vacancies",
+        "tags": [
+          "Вакансии"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "maxLength": 100,
+                          "minLength": 1
+                        },
+                        "demandId": {
+                          "type": "string",
+                          "maxLength": 100,
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "demandId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только работодатель-владелец. Потребность должна содержать зарплату. Повтор не создаёт вторую вакансию.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "demandId": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "demandId"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vacancies/{id}/apply": {
+      "post": {
+        "summary": "Самостоятельный отклик кандидата",
+        "operationId": "post_vacancies_id_apply",
+        "tags": [
+          "Вакансии"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "vacancyId": {
+                          "type": "string",
+                          "maxLength": 100,
+                          "minLength": 1
+                        },
+                        "applied": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "contactEmployerId": {
+                          "type": "string",
+                          "maxLength": 100,
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "vacancyId",
+                        "applied",
+                        "contactEmployerId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только кандидат с согласием на обработку. Отклик сохраняется, контакты раскрываются только работодателю этой вакансии. Публикация общего профиля не требуется.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "appSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "fsp_session",
+        "description": "Непрозрачный HttpOnly cookie, Secure на HTTPS. До подтверждения email доступны только session/confirmation/resend/logout."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "candidate",
+              "employer"
+            ]
+          },
+          "emailVerified": {
+            "type": "boolean"
+          },
+          "consentProcessing": {
+            "type": "boolean"
+          },
+          "demo": {
+            "type": "boolean"
+          },
+          "mailError": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "emailVerified"
+        ]
+      },
+      "Achievement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "event": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "discipline": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "date": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "result": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "place": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "team": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "mock-fsp",
+              "fsp"
+            ]
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "event",
+          "discipline",
+          "date",
+          "result",
+          "source",
+          "verified"
+        ]
+      },
+      "Contacts": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "email",
+          "phone"
+        ]
+      },
+      "Candidate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "bio": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "claimedGrade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "verifiedGrade": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "junior",
+                  "middle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "demonstratedSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "testScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "experienceYears": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 70
+          },
+          "fspVerified": {
+            "type": "boolean"
+          },
+          "achievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Achievement"
+            }
+          },
+          "lastVerifiedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "synthetic": {
+            "type": "boolean"
+          },
+          "contactUnlocked": {
+            "type": "boolean"
+          },
+          "contacts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Contacts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "title",
+          "city",
+          "specialization",
+          "verifiedGrade",
+          "skills",
+          "demonstratedSkills",
+          "testScore",
+          "fspVerified",
+          "achievements"
+        ]
+      },
+      "OwnCandidateProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "bio": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "claimedGrade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "verifiedGrade": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "junior",
+                  "middle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "demonstratedSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "testScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "experienceYears": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 70
+          },
+          "fspVerified": {
+            "type": "boolean"
+          },
+          "achievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Achievement"
+            }
+          },
+          "lastVerifiedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "synthetic": {
+            "type": "boolean"
+          },
+          "contactUnlocked": {
+            "type": "boolean"
+          },
+          "contacts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Contacts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email"
+          },
+          "consentProcessing": {
+            "type": "boolean"
+          },
+          "consentPublication": {
+            "type": "boolean"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "fspId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nextGradeEligibleAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "specialization",
+          "verifiedGrade",
+          "skills",
+          "consentProcessing",
+          "consentPublication",
+          "isPublic"
+        ]
+      },
+      "EmployerProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "website": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "contactName": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "contactEmail": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "contactMethod": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "website",
+          "description",
+          "contactName",
+          "contactEmail",
+          "contactMethod"
+        ]
+      },
+      "Profile": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/OwnCandidateProfile"
+          },
+          {
+            "$ref": "#/components/schemas/EmployerProfile"
+          }
+        ]
+      },
+      "CandidatePatch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "bio": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "claimedGrade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "experienceYears": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 70
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "consentProcessing": {
+            "type": "boolean"
+          },
+          "consentPublication": {
+            "type": "boolean"
+          },
+          "isPublic": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmployerPatch": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "website": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "contactName": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "contactEmail": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "contactMethod": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "prompt": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "options": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "minLength": 1
+                },
+                "text": {
+                  "type": "string",
+                  "maxLength": 2000
+                }
+              },
+              "required": [
+                "id",
+                "text"
+              ]
+            }
+          },
+          "skill": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "family": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "id",
+          "prompt",
+          "options",
+          "skill",
+          "family"
+        ]
+      },
+      "Exam": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "grade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "questions": {
+            "type": "array",
+            "minItems": 12,
+            "maxItems": 12,
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "const": 600
+          },
+          "threshold": {
+            "type": "number",
+            "const": 75
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "id",
+          "specialization",
+          "grade",
+          "questions",
+          "expiresAt",
+          "durationSeconds"
+        ]
+      },
+      "TestFeedback": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "skill": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "correct": {
+            "type": "boolean"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "questionId",
+          "skill",
+          "correct",
+          "rationale"
+        ]
+      },
+      "TestResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "grade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "correct": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 12
+          },
+          "total": {
+            "type": "integer",
+            "const": 12
+          },
+          "feedback": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestFeedback"
+            }
+          },
+          "demonstratedSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "skillScores": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "recommendation": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "verifiedGrade": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "junior",
+                  "middle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "nextEligibleAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expired": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "passed",
+          "score",
+          "threshold",
+          "submittedAt"
+        ]
+      },
+      "ScoreBreakdown": {
+        "type": "object",
+        "properties": {
+          "demonstratedSkills": {
+            "type": "number"
+          },
+          "testConfidence": {
+            "type": "number"
+          },
+          "context": {
+            "type": "number"
+          },
+          "declaredSkills": {
+            "type": "number"
+          },
+          "achievements": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "demonstratedSkills",
+          "testConfidence",
+          "context",
+          "declaredSkills",
+          "achievements"
+        ]
+      },
+      "Recommendation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "bio": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "claimedGrade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "verifiedGrade": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "junior",
+                  "middle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "demonstratedSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "testScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "experienceYears": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 70
+          },
+          "fspVerified": {
+            "type": "boolean"
+          },
+          "achievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Achievement"
+            }
+          },
+          "lastVerifiedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "synthetic": {
+            "type": "boolean"
+          },
+          "contactUnlocked": {
+            "type": "boolean"
+          },
+          "contacts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Contacts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "scoreBreakdown": {
+            "$ref": "#/components/schemas/ScoreBreakdown"
+          },
+          "achievementBonus": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "matchedSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "specialization",
+          "verifiedGrade",
+          "score",
+          "scoreBreakdown",
+          "testScore",
+          "achievementBonus",
+          "reasons",
+          "gaps",
+          "demonstratedSkills",
+          "contactUnlocked"
+        ]
+      },
+      "Demand": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "grade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "mustHave": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "salaryFrom": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "salaryTo": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "algorithmVersion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "original": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Recommendation"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "originalCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "specialization",
+          "grade",
+          "skills",
+          "mustHave",
+          "createdAt"
+        ]
+      },
+      "DemandInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "grade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "mustHave": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "salaryFrom": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "salaryTo": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "specialization",
+          "grade"
+        ]
+      },
+      "Invitation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "candidateId": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "employerId": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "demandId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "candidateName": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "contactMethod": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "salaryFrom": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "salaryTo": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "declined"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "respondedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contacts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Contacts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "candidateId",
+          "employerId",
+          "company",
+          "candidateName",
+          "title",
+          "description",
+          "contactMethod",
+          "salaryFrom",
+          "salaryTo",
+          "status",
+          "createdAt",
+          "contacts"
+        ]
+      },
+      "InvitationInput": {
+        "type": "object",
+        "properties": {
+          "candidateId": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "demandId": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "salaryFrom": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "salaryTo": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1
+          },
+          "contactMethod": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "candidateId",
+          "salaryFrom",
+          "salaryTo",
+          "description",
+          "contactMethod"
+        ]
+      },
+      "Vacancy": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "grade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "mustHave": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "salaryFrom": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "salaryTo": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "algorithmVersion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "demandId": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "website": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "applied": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "demandId",
+          "title",
+          "description",
+          "specialization",
+          "grade",
+          "company",
+          "salaryFrom",
+          "salaryTo",
+          "createdAt",
+          "applied"
+        ]
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "grade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "specialization",
+          "grade",
+          "label"
+        ]
+      },
+      "Meta": {
+        "type": "object",
+        "properties": {
+          "demoMode": {
+            "type": "boolean"
+          },
+          "algorithmVersion": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "testVersion": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "gradeChangeDays": {
+            "type": "integer",
+            "const": 90
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "const": 600
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          "skillCatalog": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            }
+          },
+          "registryExamples": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fspId": {
+                  "type": "string",
+                  "maxLength": 80
+                },
+                "proofCode": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "name": {
+                  "type": "string",
+                  "maxLength": 150
+                }
+              },
+              "required": [
+                "fspId",
+                "proofCode",
+                "name"
+              ]
+            }
+          },
+          "fspSource": {
+            "type": "string",
+            "const": "mock-fsp"
+          },
+          "mailMode": {
+            "type": "string",
+            "enum": [
+              "demo-outbox",
+              "resend"
+            ]
+          }
+        },
+        "required": [
+          "demoMode",
+          "algorithmVersion",
+          "categories",
+          "registryExamples"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Общее"
+    },
+    {
+      "name": "Авторизация"
+    },
+    {
+      "name": "Профиль"
+    },
+    {
+      "name": "Тестирование"
+    },
+    {
+      "name": "Подбор"
+    },
+    {
+      "name": "Приглашения"
+    },
+    {
+      "name": "Вакансии"
+    }
+  ]
+}

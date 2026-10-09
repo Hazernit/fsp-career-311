@@ -1,0 +1,104 @@
+{
+  "kind": "local-white-box-integration",
+  "passed": 19,
+  "failed": 0,
+  "durationMs": 1082,
+  "results": [
+    {
+      "name": "Anonymous access denied",
+      "passed": true,
+      "durationMs": 110
+    },
+    {
+      "name": "Email registration requires consent and confirmation",
+      "passed": true,
+      "durationMs": 137
+    },
+    {
+      "name": "Demo roles create separate server sessions",
+      "passed": true,
+      "durationMs": 55
+    },
+    {
+      "name": "Role separation and CSRF origin enforced",
+      "passed": true,
+      "durationMs": 15
+    },
+    {
+      "name": "Profile edits cannot forge grade or FSP verification",
+      "passed": true,
+      "durationMs": 26
+    },
+    {
+      "name": "Private answer key and seed absent from exam response",
+      "passed": true,
+      "durationMs": 16
+    },
+    {
+      "name": "Failed middle test does not downgrade and permits initial junior test",
+      "passed": true,
+      "durationMs": 23
+    },
+    {
+      "name": "Reference answers confirm category and recorded skill evidence",
+      "passed": true,
+      "durationMs": 37
+    },
+    {
+      "name": "Employer finds verified candidates with explanations and no contacts",
+      "passed": true,
+      "durationMs": 33
+    },
+    {
+      "name": "Contact is hidden in candidate API and PDF before acceptance",
+      "passed": true,
+      "durationMs": 155
+    },
+    {
+      "name": "Invitation requires salary and only target candidate may respond",
+      "passed": true,
+      "durationMs": 40
+    },
+    {
+      "name": "Acceptance grants contacts only to the inviting employer",
+      "passed": true,
+      "durationMs": 138
+    },
+    {
+      "name": "Filtering keeps the persisted original shortlist",
+      "passed": true,
+      "durationMs": 27
+    },
+    {
+      "name": "Publication withdrawal removes discovery and stale shortlist entries",
+      "passed": true,
+      "durationMs": 31
+    },
+    {
+      "name": "Processing withdrawal denies candidate cards even after acceptance",
+      "passed": true,
+      "durationMs": 48
+    },
+    {
+      "name": "Processing withdrawal denies employer PDF export for accepted and foreign pairs",
+      "passed": true,
+      "durationMs": 14
+    },
+    {
+      "name": "Processing withdrawal redacts contacts in accepted invitation lists",
+      "passed": true,
+      "durationMs": 19
+    },
+    {
+      "name": "Published vacancies and self-application are persisted",
+      "passed": true,
+      "durationMs": 42
+    },
+    {
+      "name": "Processing consent gates self-application access and restoration remains employer-specific",
+      "passed": true,
+      "durationMs": 116
+    }
+  ],
+  "note": "Reference answers read only from local server storage by the test harness; this validates mechanics, not human ability."
+}

@@ -1,0 +1,17 @@
+services:
+  career:
+    build: .
+    ports:
+      - "127.0.0.1:${FSP_PORT:-8080}:8080"
+    environment:
+      DEMO_MODE: "true"
+    volumes:
+      - fsp-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/meta').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+volumes:
+  fsp-data:
