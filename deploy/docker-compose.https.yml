@@ -1,0 +1,38 @@
+# Future VM deployment override; read docs/deployment-options.md first.
+# Apply together with compose.yaml, never as a standalone Compose file.
+services:
+  career:
+    # Only Caddy receives public requests; remove the base HTTP port mapping.
+    ports: !reset []
+    expose:
+      - "8080"
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2-alpine}
+    restart: unless-stopped
+    depends_on:
+      career:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      FSP_DOMAIN: ${FSP_DOMAIN:?Set the public DNS hostname}
+      FSP_TLS_EMAIL: ${FSP_TLS_EMAIL:?Set the ACME account email}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  fsp-data:
+    # Reuse the exact data volume from the existing Compose installation.
+    # An absent external volume must fail rather than silently create an empty DB.
+    external: true
+    name: ${FSP_DATA_VOLUME:?Set the existing Docker volume mounted at /data}
+  caddy-data:
+  caddy-config:

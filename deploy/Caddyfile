@@ -1,0 +1,13 @@
+{
+    email {$FSP_TLS_EMAIL}
+}
+
+{$FSP_DOMAIN} {
+    encode gzip
+    reverse_proxy career:8080 {
+        # Host and Origin remain unchanged. Caddy sets X-Forwarded-Proto/Host/For.
+        # The application runtime must reconstruct the original HTTPS URL.
+        # Never trust a client-supplied Cloudflare client-IP header on this VM.
+        header_up -CF-Connecting-IP
+    }
+}
