@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import './local-env.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const migrations = spawnSync(process.execPath, [resolve(root, 'scripts/local-db.mjs')], { stdio: 'inherit', cwd: root, env: process.env });
