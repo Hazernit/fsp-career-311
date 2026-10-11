@@ -1,0 +1,53 @@
+{
+  "status": "pass",
+  "checks": [
+    {
+      "name": "Direct backend requests fail without the gateway token",
+      "passed": true
+    },
+    {
+      "name": "Authenticated gateway reaches metadata",
+      "passed": true
+    },
+    {
+      "name": "SSR root and query route work",
+      "passed": true
+    },
+    {
+      "name": "Foreign Origin is denied",
+      "passed": true
+    },
+    {
+      "name": "Demo login creates Secure session and pairing cookies",
+      "passed": true
+    },
+    {
+      "name": "Cookie authentication survives a second request",
+      "passed": true
+    },
+    {
+      "name": "Registration produces the external HTTPS confirmation URL",
+      "passed": true
+    },
+    {
+      "name": "Email confirmation succeeds behind the gateway",
+      "passed": true
+    },
+    {
+      "name": "Authenticated profile writes and reads work",
+      "passed": true
+    },
+    {
+      "name": "Logout clears the HTTPS session",
+      "passed": true
+    },
+    {
+      "name": "Registered participant can log in again",
+      "passed": true
+    }
+  ],
+  "localRuntimeOnly": true,
+  "cloudNetworkTested": false,
+  "testedOrigin": "https://example.apigw.yandexcloud.net",
+  "tokenIncludedInReport": false
+}

@@ -1,0 +1,30 @@
+name: fsp-career-cloud
+services:
+  career:
+    image: ${FSP_IMAGE:-fsp-career:cloud}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "${FSP_PRIVATE_IP:?Set the VM private IPv4}:8080:8080"
+    environment:
+      DEMO_MODE: "true"
+      FSP_PUBLIC_ORIGIN: ${FSP_PUBLIC_ORIGIN:?Set the HTTPS gateway origin}
+      FSP_GATEWAY_TOKEN: ${FSP_GATEWAY_TOKEN:?Set a random 64-character hexadecimal token}
+    volumes:
+      - fsp-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/meta',{headers:{'x-fsp-gateway-token':process.env.FSP_GATEWAY_TOKEN}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 45s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  fsp-data:
+    external: true
+    name: ${FSP_DATA_VOLUME:-fsp-career-cloud-data}

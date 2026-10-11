@@ -1,0 +1,14 @@
+#cloud-config
+package_update: false
+ssh_pwauth: false
+write_files:
+  - path: /root/fsp-bootstrap.env
+    owner: root:root
+    permissions: '0600'
+    content: |
+      FSP_SOURCE_COMMIT=REPLACE_COMMIT
+      FSP_PUBLIC_ORIGIN=https://REPLACE_GATEWAY_HOST
+      FSP_GATEWAY_TOKEN=REPLACE_GATEWAY_TOKEN
+runcmd:
+  - [bash, -c, 'curl --fail --show-error --silent --location https://raw.githubusercontent.com/Hazernit/fsp-career-311/REPLACE_COMMIT/deploy/bootstrap-yandex.sh --output /root/fsp-bootstrap.sh && chmod 0700 /root/fsp-bootstrap.sh && /root/fsp-bootstrap.sh /root/fsp-bootstrap.env']
+final_message: 'Cloud-init finished. Verify FSP_DEPLOYMENT_READY and the career container health.'

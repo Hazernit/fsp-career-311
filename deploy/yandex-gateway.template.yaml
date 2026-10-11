@@ -1,0 +1,57 @@
+openapi: 3.0.0
+info:
+  title: ФСП Карьера — команда 311
+  version: 1.0.0
+paths:
+  /:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: http
+        url: http://REPLACE_PRIVATE_IP:8080/
+        headers:
+          '*': '*'
+          Host: REPLACE_GATEWAY_HOST
+          X-FSP-Gateway-Token: REPLACE_GATEWAY_TOKEN
+          CF-Connecting-IP: ''
+          X-Forwarded-For: ''
+          X-Forwarded-Host: ''
+          X-Forwarded-Proto: ''
+          Forwarded: ''
+        query:
+          '*': '*'
+        omitEmptyHeaders: true
+        timeouts:
+          connect: 5
+          read: 60
+      responses:
+        default:
+          description: Ответ приложения
+  /{path+}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: path
+          in: path
+          required: false
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: http
+        url: http://REPLACE_PRIVATE_IP:8080/{path}
+        headers:
+          '*': '*'
+          Host: REPLACE_GATEWAY_HOST
+          X-FSP-Gateway-Token: REPLACE_GATEWAY_TOKEN
+          CF-Connecting-IP: ''
+          X-Forwarded-For: ''
+          X-Forwarded-Host: ''
+          X-Forwarded-Proto: ''
+          Forwarded: ''
+        query:
+          '*': '*'
+        omitEmptyHeaders: true
+        timeouts:
+          connect: 5
+          read: 60
+      responses:
+        default:
+          description: Ответ приложения
