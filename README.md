@@ -71,6 +71,7 @@ npm start -- --port 5173
 ```sh
 npm run typecheck
 npm run test:domain
+node --test tests/migrations.test.ts
 npm run validate
 ```
 
