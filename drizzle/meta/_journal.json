@@ -15,6 +15,13 @@
       "when": 1791580076321,
       "tag": "0001_outgoing_lester",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791723108573,
+      "tag": "0002_white_captain_marvel",
+      "breakpoints": true
     }
   ]
 }

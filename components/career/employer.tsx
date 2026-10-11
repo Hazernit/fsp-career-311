@@ -693,6 +693,26 @@ export function CandidateDetail({
         <h3>Заявлено в резюме</h3>
         <SkillTags skills={data.skills} />
       </div>
+      <div className="detail-traits-grid">
+        <div className="detail-skills">
+          <h3>Роли в команде</h3>
+          {data.roles?.length ? (
+            <SkillTags skills={data.roles} />
+          ) : (
+            <p className="muted">Не указаны</p>
+          )}
+          <small>Указаны кандидатом в резюме</small>
+        </div>
+        <div className="detail-skills">
+          <h3>Софт-скиллы</h3>
+          {data.softSkills?.length ? (
+            <SkillTags skills={data.softSkills} />
+          ) : (
+            <p className="muted">Не указаны</p>
+          )}
+          <small>Указаны кандидатом в резюме</small>
+        </div>
+      </div>
       {candidate.reasons?.length ? (
         <div className="detail-reasons">
           <h3>Почему в подборке</h3>

@@ -1,9 +1,8 @@
-import { all, database, newId, one, parseJson, run, timestamp } from './db';
+import { all, newId, one, parseJson, run, timestamp } from './db';
 import { ApiError, bad, choice, salary, string, stringArray } from './security';
 import type { UserRow } from './security';
-import { candidateBase, matchingCandidates, profileRow, publicCandidate, unlocked } from './profiles';
-import type { ProfileRow } from './profiles';
-import { ALGORITHM_VERSION, extractDemandSkills, normalizeSkill, rankCandidates } from '../domain/matching';
+import { matchingCandidates, profileRow, publicCandidate } from './profiles';
+import { ALGORITHM_VERSION, extractDemandSkills, normalizeSkill, rankCandidates, rankCatalogCandidates } from '../domain/matching';
 import type { Recommendation } from '../domain/matching';
 import { ensureSeed } from './seed';
 import { redactContactText } from './privacy';
@@ -27,7 +26,13 @@ export async function safeOriginal(user: UserRow, row: DemandRow): Promise<Recom
   const permitted = await all<{candidate_id:string}>(`SELECT candidate_id FROM invitations WHERE employer_id=? AND status='accepted' UNION SELECT candidate_id FROM applications WHERE employer_id=?`,user.id,user.id);
   const visibleIds = new Set(visible.map(x=>x.id));
   const permittedIds = new Set(permitted.map(x=>x.candidate_id));
-  return original.filter(candidate=>visibleIds.has(candidate.id)).map(candidate=>({...candidate,contactUnlocked:permittedIds.has(candidate.id)}));
+  // Old persisted snapshots predate newer free-text redaction rules. Reapply them
+  // on disclosure without changing the stored score, order or historical payload.
+  return original.filter(candidate=>visibleIds.has(candidate.id)).map(candidate=>({...candidate,
+    name:redactContactText(candidate.name),title:redactContactText(candidate.title),city:redactContactText(candidate.city),
+    bio:candidate.bio ? redactContactText(candidate.bio) : candidate.bio,industry:candidate.industry ? redactContactText(candidate.industry) : candidate.industry,
+    skills:candidate.skills.map(redactContactText),roles:(candidate.roles ?? []).map(redactContactText),softSkills:(candidate.softSkills ?? []).map(redactContactText),
+    contactUnlocked:permittedIds.has(candidate.id)}));
 }
 export async function listDemands(user: UserRow) {
   const rows = await all<DemandRow>('SELECT * FROM demands WHERE employer_id = ? ORDER BY created_at DESC LIMIT 100',user.id);
@@ -56,7 +61,7 @@ export async function matchDemand(user: UserRow, id: string) {
   await ensureSeed();
   let row = await ownedDemand(user,id);
   const demand = demandDto(row);
-  const candidates = await matchingCandidates(user.id);
+  const candidates = await matchingCandidates();
   if (!row.original_json) {
     const original = rankCandidates(candidates,demand);
     // Concurrent match requests never overwrite the first persisted snapshot.
@@ -67,7 +72,7 @@ export async function matchDemand(user: UserRow, id: string) {
 }
 export async function browseCandidates(user: UserRow, params: URLSearchParams) {
   await ensureSeed();
-  let candidates = await matchingCandidates(user.id);
+  let candidates = await matchingCandidates();
   const specialization = params.get('specialization');
   const grade = params.get('grade');
   const fspOnly = params.get('fspOnly') === 'true' || params.get('fspOnly') === '1';
@@ -78,7 +83,7 @@ export async function browseCandidates(user: UserRow, params: URLSearchParams) {
   if (requested.length) candidates = candidates.filter(x=>requested.every(s=>x.skills.map(normalizeSkill).includes(s) || x.demonstratedSkills.map(normalizeSkill).includes(s)));
   const permitted = await all<{candidate_id:string}>(`SELECT candidate_id FROM invitations WHERE employer_id=? AND status='accepted' UNION SELECT candidate_id FROM applications WHERE employer_id=?`,user.id,user.id);
   const ids = new Set(permitted.map(x=>x.candidate_id));
-  return candidates.map(c=>({...c,score:0,achievementBonus:0,reasons:[],gaps:[],contactUnlocked:ids.has(c.id)}));
+  return rankCatalogCandidates(candidates).map(c=>({...c,contactUnlocked:ids.has(c.id)}));
 }
 async function invitationRows(where: string, ...args: unknown[]): Promise<InvitationRow[]> {
   return all<InvitationRow>(`SELECT i.*, ep.company, cp.name AS candidate_name, COALESCE(d.title, cp.title) AS title, u.email AS candidate_email, cp.phone AS candidate_phone, u.consent_processing AS candidate_consent_processing
@@ -140,6 +145,41 @@ export async function applyVacancy(user: UserRow, id: string) {
   const vacancy = await one<{employer_id:string}>('SELECT employer_id FROM vacancies WHERE id = ?',id);
   if (!vacancy) throw new ApiError(404,'VACANCY_NOT_FOUND','Вакансия не найдена.');
   const applicationId = newId('application');
-  await run('INSERT OR IGNORE INTO applications(id,vacancy_id,candidate_id,employer_id,created_at) VALUES(?,?,?,?,?)',applicationId,id,user.id,vacancy.employer_id,timestamp());
+  const now = timestamp();
+  await run('INSERT OR IGNORE INTO applications(id,vacancy_id,candidate_id,employer_id,status,created_at,updated_at) VALUES(?,?,?,? ,\'sent\',?,?)',applicationId,id,user.id,vacancy.employer_id,now,now);
   return {vacancyId:id,applied:true,contactEmployerId:vacancy.employer_id};
+}
+
+interface ApplicationRow {
+  id:string;vacancy_id:string;employer_id:string;candidate_id:string;company:string;title:string;candidate_name:string;
+  salary_from:number;salary_to:number;status:'sent'|'viewed'|'accepted'|'declined';created_at:string;updated_at:string;candidate_consent_processing:number;
+}
+async function applicationRows(user: UserRow, id?: string) {
+  const own = user.role === 'candidate' ? 'a.candidate_id' : 'a.employer_id';
+  return all<ApplicationRow>(`SELECT a.*, ep.company, d.title, d.salary_from, d.salary_to, cp.name AS candidate_name, u.consent_processing AS candidate_consent_processing
+    FROM applications a JOIN vacancies v ON v.id = a.vacancy_id JOIN demands d ON d.id = v.demand_id
+    JOIN profiles ep ON ep.id = a.employer_id JOIN profiles cp ON cp.id = a.candidate_id JOIN users u ON u.id = a.candidate_id
+    WHERE ${own} = ? ${id ? 'AND a.id = ?' : ''} ORDER BY a.created_at DESC, a.id`,... (id ? [user.id,id] : [user.id]));
+}
+function applicationDto(row: ApplicationRow, user: UserRow) {
+  // Applying grants the target employer contact access only while processing consent is active.
+  const reveal = user.role === 'candidate' || !!row.candidate_consent_processing;
+  return {id:row.id,vacancyId:row.vacancy_id,employerId:row.employer_id,candidateId:row.candidate_id,company:row.company,title:row.title,
+    candidateName:reveal ? row.candidate_name : redactContactText(row.candidate_name),salaryFrom:row.salary_from,salaryTo:row.salary_to,
+    status:row.status,createdAt:row.created_at,updatedAt:row.updated_at};
+}
+export async function listApplications(user: UserRow) {
+  return (await applicationRows(user)).map(row=>applicationDto(row,user));
+}
+export async function updateApplicationStatus(user: UserRow, id: string, body: Record<string, unknown>) {
+  if (user.role !== 'employer') throw new ApiError(403,'ROLE_DENIED','Статус отклика меняет работодатель.');
+  if (Object.keys(body).some(key=>key !== 'status')) bad('Запрос содержит недоступные поля отклика.');
+  const status = choice(body.status,['viewed','accepted','declined'] as const,'статус отклика');
+  const row = (await applicationRows(user,id))[0];
+  if (!row) throw new ApiError(404,'APPLICATION_NOT_FOUND','Отклик не найден.');
+  if (row.status === status) return applicationDto(row,user);
+  if (row.status === 'accepted' || row.status === 'declined') throw new ApiError(409,'APPLICATION_FINAL','Решение по отклику уже принято.');
+  const result = await run("UPDATE applications SET status = ?, updated_at = ? WHERE id = ? AND employer_id = ? AND status = ?",status,timestamp(),id,user.id,row.status);
+  if (!result.meta.changes) throw new ApiError(409,'APPLICATION_CHANGED','Статус уже изменился. Обновите список откликов.');
+  return applicationDto((await applicationRows(user,id))[0],user);
 }

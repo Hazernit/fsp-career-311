@@ -28,6 +28,8 @@ export type Candidate = {
   email?: string;
   bio?: string;
   skills: string[];
+  roles: string[];
+  softSkills: string[];
   demonstratedSkills?: string[];
   experienceYears?: number;
   industry?: string;
@@ -100,6 +102,13 @@ export type Question = {
   skill: string;
   kind?: string;
 };
+export type QuestionnaireRecord = {
+  id: string;
+  industry: string;
+  specialization: Specialization;
+  claimedGrade: Grade;
+  createdAt: string;
+};
 export type Exam = {
   id: string;
   specialization: Specialization;
@@ -155,6 +164,21 @@ export type Vacancy = {
   salaryTo?: number;
   applied?: boolean;
   employerId?: string;
+};
+export type ApplicationStatus = "sent" | "viewed" | "accepted" | "declined";
+export type Application = {
+  id: string;
+  vacancyId: string;
+  employerId: string;
+  candidateId: string;
+  company: string;
+  title: string;
+  candidateName: string;
+  salaryFrom: number;
+  salaryTo: number;
+  status: ApplicationStatus;
+  createdAt: string;
+  updatedAt: string;
 };
 export const specName = (s?: string) =>
   s === "frontend" ? "Frontend" : s === "backend" ? "Backend" : "Не выбрана";

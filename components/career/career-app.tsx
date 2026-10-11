@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { AuthScreen } from "./auth";
+import { Applications } from "./applications";
 import { clearExamDrafts } from "./exam-draft";
 import { CandidateCatalog } from "./catalog";
 import {
@@ -44,6 +45,7 @@ import {
 import { Vacancies } from "./vacancies";
 import {
   api,
+  type Application,
   type Candidate,
   type Demand,
   type Employer,
@@ -67,6 +69,7 @@ export default function CareerApp() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [demands, setDemands] = useState<Demand[]>([]);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [view, setView] = useState("overview");
   const [loading, setLoading] = useState(true);
@@ -96,18 +99,20 @@ export default function CareerApp() {
       setConfirmation(await api("/api/auth/confirmation"));
       return;
     }
-    const [p, i, d, v] = await Promise.all([
+    const [p, i, d, v, a] = await Promise.all([
       api<Profile>("/api/profile"),
       api<Invitation[]>("/api/invitations"),
       current.role === "employer"
         ? api<Demand[]>("/api/demands")
         : Promise.resolve([] as Demand[]),
       api<Vacancy[]>("/api/vacancies"),
+      api<Application[]>("/api/applications"),
     ]);
     setProfile(p);
     setInvitations(i);
     setDemands(d);
     setVacancies(v);
+    setApplications(a);
     setSelectedId((old) =>
       d.some((x) => x.id === old) ? old : d[0]?.id || "",
     );
@@ -194,6 +199,8 @@ export default function CareerApp() {
       setProfile(null);
       setInvitations([]);
       setDemands([]);
+      setVacancies([]);
+      setApplications([]);
       setMobileNav(false);
     } catch (e) {
       notify(e instanceof Error ? e.message : "Не удалось выйти", true);
@@ -348,12 +355,14 @@ export default function CareerApp() {
         { id: "achievements", label: "Достижения ФСП", icon: Award },
         { id: "invitations", label: "Приглашения", icon: Mail },
         { id: "vacancies", label: "Вакансии", icon: BriefcaseBusiness },
+        { id: "applications", label: "Отклики", icon: BookOpen },
       ]
     : [
         { id: "matching", label: "Подбор кандидатов", icon: Users },
         { id: "catalog", label: "Каталог кандидатов", icon: SearchIcon },
         { id: "invitations", label: "Приглашения", icon: SendIcon },
         { id: "vacancies", label: "Вакансии", icon: BriefcaseBusiness },
+        { id: "applications", label: "Отклики", icon: BookOpen },
         { id: "company", label: "Профиль компании", icon: Settings2 },
       ];
   const label = nav.find((n) => n.id === view)?.label || "Как это работает";
@@ -543,6 +552,15 @@ export default function CareerApp() {
               demands={demands}
               refresh={refresh}
               notify={notify}
+            />
+          ) : view === "applications" ? (
+            <Applications
+              role={user.role}
+              applications={applications}
+              employer={candidate ? undefined : (profile as Employer)}
+              refresh={refresh}
+              notify={notify}
+              navigate={navigate}
             />
           ) : !candidate && view === "company" ? (
             <EmployerProfile

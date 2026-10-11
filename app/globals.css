@@ -2209,6 +2209,59 @@ input[type="checkbox"] {
 .history-card {
   padding: 24px;
 }
+.questionnaire-industry {
+  grid-column: 1 / -1;
+}
+.test-history-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+}
+.test-history-grid > .history-card {
+  min-width: 0;
+}
+.history-description {
+  margin: -6px 0 16px;
+  color: #726981;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.candidate-declared-traits {
+  margin: 14px 0 18px;
+  color: #726981;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.candidate-declared-traits p {
+  margin: 4px 0;
+}
+.candidate-declared-traits p > span {
+  color: #463a58;
+  font-weight: 600;
+}
+.candidate-declared-traits > small {
+  display: block;
+  margin-top: 5px;
+  color: #8c819a;
+  font-size: 10px;
+}
+.detail-traits-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+@media (max-width: 1180px) {
+  .test-history-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .detail-traits-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
 .history-card .card-title {
   margin-bottom: 20px;
 }
@@ -2575,6 +2628,61 @@ td .badge {
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+.applications-tabs {
+  overflow-x: auto;
+}
+.applications-tabs > button {
+  flex-shrink: 0;
+}
+.application-company {
+  display: block;
+  margin-top: 5px;
+  color: #726981;
+  font-size: 11px;
+}
+.application-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  color: #726981;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.application-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #ece7f1;
+}
+.application-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.application-footer .button {
+  min-height: 37px;
+  font-size: 11px;
+}
+.application-privacy {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #726981;
+  font-size: 11px;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .application-actions {
+    width: 100%;
+  }
+  .application-actions > .button {
+    flex: 1;
+  }
 }
 .invitation-card {
   padding: 24px;

@@ -3,6 +3,7 @@ import { ApiError, bad, choice, rateLimit } from './security';
 import type { UserRow } from './security';
 import { category, profileRow } from './profiles';
 import { canStartExam, evaluateExam, generateExam, publicExam } from '../domain/tests';
+import { requiredQuestionnaire } from './questionnaires';
 
 interface AttemptRow {id:string;user_id:string;specialization:'backend'|'frontend';grade:'junior'|'middle';exam_json:string;created_at:string;expires_at:string;submitted_at:string|null;result_json:string|null;}
 function examView(row: AttemptRow) {
@@ -17,6 +18,7 @@ export async function startExam(user: UserRow, body: Record<string, unknown>) {
   const specialization = choice(body.specialization,['backend','frontend'] as const,'специализацию');
   const grade = choice(body.grade,['junior','middle'] as const,'грейд');
   if (!user.consent_processing) throw new ApiError(403,'CONSENT_REQUIRED','Разрешите обработку данных для проверки компетенций.');
+  const questionnaire = await requiredQuestionnaire(user,specialization,grade);
   const profile = await profileRow(user.id);
   const policy = canStartExam({specialization,grade,verifiedSpecialization:profile.verified_grade ? profile.specialization : undefined,verifiedGrade:profile.verified_grade || undefined,lastVerifiedAt:profile.last_verified_at || undefined});
   if (!policy.allowed) throw new ApiError(409,'GRADE_COOLDOWN',policy.reason || `Следующее подтверждение доступно ${policy.nextEligibleAt}.`);
@@ -33,7 +35,7 @@ export async function startExam(user: UserRow, body: Record<string, unknown>) {
   const createdAt = timestamp();
   const expiresAt = new Date(Date.now() + exam.durationSeconds*1000).toISOString();
   await database().prepare('UPDATE test_attempts SET submitted_at = ?, result_json = ? WHERE user_id = ? AND submitted_at IS NULL AND expires_at <= ?').bind(createdAt,JSON.stringify({passed:false,score:0,threshold:75,expired:true,submittedAt:createdAt}),user.id,createdAt).run();
-  await database().prepare('INSERT INTO test_attempts(id,user_id,specialization,grade,exam_json,created_at,expires_at) VALUES(?,?,?,?,?,?,?)').bind(id,user.id,specialization,grade,JSON.stringify(exam),createdAt,expiresAt).run();
+  await database().prepare('INSERT INTO test_attempts(id,user_id,specialization,grade,questionnaire_id,exam_json,created_at,expires_at) VALUES(?,?,?,?,?,?,?,?)').bind(id,user.id,specialization,grade,questionnaire.id,JSON.stringify(exam),createdAt,expiresAt).run();
   return {...publicExam(exam),id,createdAt,expiresAt};
 }
 export async function submitExam(user: UserRow, id: string, body: Record<string, unknown>) {

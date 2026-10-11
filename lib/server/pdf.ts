@@ -1,12 +1,12 @@
 import { PDFDocument, rgb, type PDFPage, type PDFFont } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { PDF_FONT_BASE64 } from './pdf-font';
+import { redactContactText } from './privacy';
 
 type Profile = Record<string, unknown>;
 type Contacts = { email?: string; phone?: string } | null;
 const list = (value: unknown): string[] => Array.isArray(value) ? value.map(String) : [];
 const text = (value: unknown, fallback = ''): string => value == null ? fallback : String(value);
-const redacted = (value: string) => value.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[контакт скрыт]').replace(/(?:\+?\d[\d ()-]{7,}\d)/g, match => match.replace(/\D/g, '').length >= 10 ? '[контакт скрыт]' : match);
 
 /** Caller must authorize access and decide per-employer contact permission first. */
 export async function renderProfilePdf(profile: Profile, contacts: Contacts): Promise<Uint8Array> {
@@ -15,7 +15,7 @@ export async function renderProfilePdf(profile: Profile, contacts: Contacts): Pr
   const fontData = Uint8Array.from(atob(PDF_FONT_BASE64), c => c.charCodeAt(0));
   const font = await doc.embedFont(fontData, { subset: true });
   const supported = new Set(font.getCharacterSet());
-  const clean = (s: string) => Array.from(contacts ? s : redacted(s)).filter(c => c === '\n' || supported.has(c.codePointAt(0)!)).join('');
+  const clean = (s: string) => Array.from(contacts ? s : redactContactText(s)).filter(c => c === '\n' || supported.has(c.codePointAt(0)!)).join('');
   const blue = rgb(.251, .184, 1), dark = rgb(.106, .11, .129), muted = rgb(.39, .42, .48);
   const pageWidth = 595.28, pageHeight = 841.89, margin = 48, contentWidth = pageWidth - margin * 2;
   let page: PDFPage, y: number;
@@ -67,6 +67,10 @@ export async function renderProfilePdf(profile: Profile, contacts: Contacts): Pr
     paragraph(`Телефон: ${contacts.phone || 'Не указан'}`);
   } else paragraph('Контакты скрыты. Доступ появляется только после принятия приглашения этой компании или самостоятельного отклика.', 10, muted);
   if (profile.bio) { section('О кандидате'); paragraph(text(profile.bio)); }
+  section('Роли и софт-скиллы');
+  paragraph(`Роли: ${list(profile.roles).join(', ') || 'Не указаны'}.`);
+  paragraph(`Софт-скиллы: ${list(profile.softSkills).join(', ') || 'Не указаны'}.`);
+  paragraph('Указаны кандидатом в резюме; первичный технический тест не подтверждает эти сведения.', 9, muted);
   section('Навыки');
   paragraph(`Указаны кандидатом: ${list(profile.skills).join(', ') || 'Не указаны'}.`);
   const demonstrated = list(profile.demonstratedSkills);

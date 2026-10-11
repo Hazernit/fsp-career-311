@@ -1,104 +1,128 @@
 {
   "kind": "local-white-box-integration",
-  "passed": 19,
+  "passed": 22,
   "failed": 0,
-  "durationMs": 691,
+  "durationMs": 1170,
   "results": [
     {
       "name": "Anonymous access denied",
       "passed": true,
-      "durationMs": 87
+      "durationMs": 36
     },
     {
       "name": "Email registration requires consent and confirmation",
       "passed": true,
-      "durationMs": 82
+      "durationMs": 149
     },
     {
       "name": "Demo roles create separate server sessions",
       "passed": true,
-      "durationMs": 33
+      "durationMs": 72
     },
     {
       "name": "Role separation and CSRF origin enforced",
       "passed": true,
-      "durationMs": 14
+      "durationMs": 13
     },
     {
       "name": "Profile edits cannot forge grade or FSP verification",
       "passed": true,
-      "durationMs": 17
+      "durationMs": 49
+    },
+    {
+      "name": "A saved own questionnaire with a required industry gates the exact test category",
+      "passed": true,
+      "durationMs": 61
     },
     {
       "name": "Private answer key and seed absent from exam response",
       "passed": true,
-      "durationMs": 12
+      "durationMs": 23
     },
     {
       "name": "Failed middle test does not downgrade and permits initial junior test",
       "passed": true,
-      "durationMs": 18
+      "durationMs": 29
     },
     {
       "name": "Reference answers confirm category and recorded skill evidence",
       "passed": true,
-      "durationMs": 27
+      "durationMs": 49
     },
     {
-      "name": "Employer finds verified candidates with explanations and no contacts",
-      "passed": true,
-      "durationMs": 30
-    },
-    {
-      "name": "Contact is hidden in candidate API and PDF before acceptance",
-      "passed": true,
-      "durationMs": 86
-    },
-    {
-      "name": "Invitation requires salary and only target candidate may respond",
-      "passed": true,
-      "durationMs": 23
-    },
-    {
-      "name": "Acceptance grants contacts only to the inviting employer",
-      "passed": true,
-      "durationMs": 73
-    },
-    {
-      "name": "Filtering keeps the persisted original shortlist",
+      "name": "Category catalogue is stably ranked on verified evidence and redacts new profile arrays",
       "passed": true,
       "durationMs": 18
     },
     {
-      "name": "Publication withdrawal removes discovery and stale shortlist entries",
+      "name": "Employer finds verified candidates with explanations and no contacts",
       "passed": true,
-      "durationMs": 26
+      "durationMs": 23
     },
     {
-      "name": "Processing withdrawal denies candidate cards even after acceptance",
+      "name": "Contact is hidden in candidate API and PDF before acceptance",
+      "passed": true,
+      "durationMs": 145
+    },
+    {
+      "name": "Invitation requires salary and only target candidate may respond",
       "passed": true,
       "durationMs": 35
     },
     {
+      "name": "Acceptance grants contacts only to the inviting employer",
+      "passed": true,
+      "durationMs": 82
+    },
+    {
+      "name": "Filtering keeps the persisted original shortlist",
+      "passed": true,
+      "durationMs": 31
+    },
+    {
+      "name": "Publication withdrawal removes discovery and stale shortlist entries",
+      "passed": true,
+      "durationMs": 32
+    },
+    {
+      "name": "Processing withdrawal denies candidate cards even after acceptance",
+      "passed": true,
+      "durationMs": 46
+    },
+    {
       "name": "Processing withdrawal denies employer PDF export for accepted and foreign pairs",
       "passed": true,
-      "durationMs": 7
+      "durationMs": 16
     },
     {
       "name": "Processing withdrawal redacts contacts in accepted invitation lists",
       "passed": true,
-      "durationMs": 11
+      "durationMs": 18
     },
     {
       "name": "Published vacancies and self-application are persisted",
       "passed": true,
-      "durationMs": 27
+      "durationMs": 40
+    },
+    {
+      "name": "Only application parties see statuses and only the owning employer can change them",
+      "passed": true,
+      "durationMs": 112
     },
     {
       "name": "Processing consent gates self-application access and restoration remains employer-specific",
       "passed": true,
-      "durationMs": 64
+      "durationMs": 89
     }
   ],
-  "note": "Reference answers read only from local server storage by the test harness; this validates mechanics, not human ability."
+  "pdfExpectedEmail": "demo_4fdfde0db89649ca983862c14eddd560@fsp.invalid",
+  "pdfExpectedPhone": "+7 000 000-11-22",
+  "pdfExpectedRole": "Backend-разработчик",
+  "pdfExpectedSoftSkill": "Командная работа",
+  "pdfExpectedMessengerContacts": [
+    "@career_contacts_311",
+    "https://t.me/career_contacts_311",
+    "https://telegram.me/team_311"
+  ],
+  "note": "Reference answers read only from local server storage by the test harness; one owned test demand snapshot is seeded with an old-version contact fixture to verify upgrade-safe redaction without rewriting stored history. This validates mechanics, not human ability. Local email confirmation uses a private demo-outbox; no real external mail delivery was exercised."
 }

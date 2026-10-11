@@ -4,7 +4,8 @@ import type { UserRow } from '../../../lib/server/security';
 import { ownProfile, profileRow, publicCandidate } from '../../../lib/server/profiles';
 import { linkFsp, unlinkFsp, updateProfile } from '../../../lib/server/profile-actions';
 import { currentExam, startExam, submitExam, testHistory } from '../../../lib/server/exams';
-import { applyVacancy, browseCandidates, createDemand, createInvitation, demandDetail, listDemands, listInvitations, listVacancies, matchDemand, publishVacancy, respondInvitation } from '../../../lib/server/hiring';
+import { applyVacancy, browseCandidates, createDemand, createInvitation, demandDetail, listDemands, listInvitations, listVacancies, matchDemand, publishVacancy, respondInvitation, listApplications, updateApplicationStatus } from '../../../lib/server/hiring';
+import { createQuestionnaire, questionnaireHistory } from '../../../lib/server/questionnaires';
 import { renderProfilePdf } from '../../../lib/server/pdf';
 import { mockFspRegistry } from '../../../lib/domain/seed';
 import { ALGORITHM_VERSION, skillCatalog } from '../../../lib/domain/matching';
@@ -48,6 +49,8 @@ async function dispatch(request: Request): Promise<Response> {
   }
   if (path.join('/') === 'fsp/link' && method === 'POST') return json(await linkFsp(await user(request,'candidate'),body));
   if (path.join('/') === 'fsp/unlink' && method === 'POST') return json(await unlinkFsp(await user(request,'candidate')));
+  if (path.join('/') === 'questionnaires' && method === 'POST') return json(await createQuestionnaire(await user(request,'candidate'),body),201);
+  if (path.join('/') === 'questionnaires/history' && method === 'GET') return json(await questionnaireHistory(await user(request,'candidate')));
   if (path.join('/') === 'tests/start' && method === 'POST') return json(await startExam(await user(request,'candidate'),body));
   if (path.join('/') === 'tests/current' && method === 'GET') return json(await currentExam(await user(request,'candidate')));
   if (path.join('/') === 'tests/history' && method === 'GET') return json(await testHistory(await user(request,'candidate')));
@@ -69,6 +72,8 @@ async function dispatch(request: Request): Promise<Response> {
   if (path.join('/') === 'vacancies' && method === 'GET') return json(await listVacancies(await user(request)));
   if (path.join('/') === 'vacancies' && method === 'POST') return json(await publishVacancy(await user(request,'employer'),body),201);
   if (path[0] === 'vacancies' && path[2] === 'apply' && path.length === 3 && method === 'POST') return json(await applyVacancy(await user(request,'candidate'),path[1]));
+  if (path.join('/') === 'applications' && method === 'GET') return json(await listApplications(await user(request)));
+  if (path[0] === 'applications' && path[2] === 'status' && path.length === 3 && method === 'POST') return json(await updateApplicationStatus(await user(request,'employer'),path[1],body));
   throw new ApiError(404,'NOT_FOUND','Метод не найден.');
 }
 async function handler(request: Request): Promise<Response> {

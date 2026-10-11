@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ФСП Карьера API",
-    "version": "1.0.0",
-    "description": "Цифровая платформа адресного подбора с тестовой категорией и контактами по согласию. Все достижения mock-fsp синтетические. Сессия приложения отдельна от границы доступа Sites. Успех под data, ошибка под error. Все изменения application/json и same-origin.",
+    "version": "1.0.2",
+    "description": "Цифровая платформа адресного подбора с тестовой категорией и контактами по согласию. Все достижения mock-fsp синтетические. Успех под data, ошибка под error. Все изменения application/json и same-origin. Локальное подтверждение email использует приватную demo-outbox; реальная доставка требует настроенного почтового провайдера.",
     "license": {
       "name": "MIT для оригинального кода; материалы ФСП исключены",
       "identifier": "MIT"
@@ -889,7 +889,7 @@
             }
           }
         },
-        "description": "Только кандидат с согласием на обработку. Одновременно одна активная попытка. Ключи и seed не выдаются. Смена подтверждённой категории через 90 дней, повтор той же категории не чаще раза в 10 минут.",
+        "description": "Только кандидат с согласием на обработку. Последняя сохранённая анкета должна содержать непустую отрасль и совпадать с specialization и grade; иначе 409 QUESTIONNAIRE_REQUIRED. questionnaireId в запросе не нужен. Одновременно одна активная попытка. Ключи и seed не выдаются. Смена подтверждённой категории через 90 дней, повтор той же категории не чаще раза в 10 минут.",
         "requestBody": {
           "required": true,
           "content": {
@@ -1377,7 +1377,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/Candidate"
+                        "$ref": "#/components/schemas/CatalogueRecommendation"
                       }
                     }
                   },
@@ -1399,7 +1399,7 @@
             }
           }
         },
-        "description": "Работодатель. skills через запятую; отдельная выдача не перезаписывает исходный снимок. Email и телефон не включены.",
+        "description": "Работодатель. skills через запятую. Профили сгруппированы по подтверждённой категории и внутри неё сортируются по score убыванию, при равенстве по ID. Score=95×testScore/100 плюс bounded verified ФСП0..5 по продемонстрированным навыкам. Фильтры не перезаписывают исходный снимок потребности. Email/phone отсутствуют; контакты в свободных строках, ролях и софт-скиллах скрыты.",
         "parameters": [
           {
             "name": "specialization",
@@ -1923,7 +1923,7 @@
             }
           }
         },
-        "description": "Только кандидат с согласием на обработку. Отклик сохраняется, контакты раскрываются только работодателю этой вакансии. Публикация общего профиля не требуется.",
+        "description": "Только кандидат с согласием на обработку. Отклик сохраняется, контакты раскрываются только работодателю этой вакансии. Публикация общего профиля не требуется. Новый отклик получает status=sent; повтор не создаёт дубль и не сбрасывает статус. Чтение статуса в /api/applications.",
         "requestBody": {
           "required": true,
           "content": {
@@ -1944,6 +1944,224 @@
               "type": "string",
               "maxLength": 100,
               "minLength": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/questionnaires": {
+      "post": {
+        "summary": "Сохранить первичную анкету",
+        "operationId": "post_questionnaires",
+        "tags": [
+          "Тестирование"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Questionnaire"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только подтверждённый кандидат с согласием на обработку. Отрасль обязательна. Сохраняет новую запись и контекст профиля; никогда не меняет verifiedGrade или уже подтверждённую specialization. До 30 анкет в час.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionnaireInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/questionnaires/history": {
+      "get": {
+        "summary": "Своя история первичных анкет",
+        "operationId": "get_questionnaires_history",
+        "tags": [
+          "Тестирование"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Questionnaire"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только подтверждённый кандидат. Все собственные сохранённые записи, новые первыми; чужие userId и private ключи не выдаются. API изменения или удаления истории отсутствует."
+      }
+    },
+    "/api/applications": {
+      "get": {
+        "summary": "Свои исходящие или входящие отклики",
+        "operationId": "get_applications",
+        "tags": [
+          "Вакансии"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Application"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Кандидат видит только свои отклики, работодатель — только отклики на свои вакансии. Contact DTO отсутствует. При отозванной обработке контактоподобный текст candidateName скрыт от работодателя."
+      }
+    },
+    "/api/applications/{id}/status": {
+      "post": {
+        "summary": "Изменить статус собственного входящего отклика",
+        "operationId": "post_applications_id_status",
+        "tags": [
+          "Вакансии"
+        ],
+        "security": [
+          {
+            "appSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Application"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка валидации, доступа, состояния или сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Только работодатель-владелец. sent→viewed/accepted/declined, viewed→accepted/declined. accepted/declined финальны: смена 409 APPLICATION_FINAL. Повтор текущего статуса идемпотентен. Кандидат 403, чужой работодатель 404.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationStatusInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
             }
           }
         ]
@@ -2232,6 +2450,26 @@
                 "type": "null"
               }
             ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "maxItems": 30,
+            "description": "Указано кандидатом; техническим тестом не подтверждается. В публичном DTO контактоподобный текст скрыт до разрешения на контакт."
+          },
+          "softSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "maxItems": 30,
+            "description": "Указано кандидатом; техническим тестом не подтверждается. В публичном DTO контактоподобный текст скрыт до разрешения на контакт."
           }
         },
         "required": [
@@ -2245,7 +2483,9 @@
           "demonstratedSkills",
           "testScore",
           "fspVerified",
-          "achievements"
+          "achievements",
+          "roles",
+          "softSkills"
         ]
       },
       "OwnCandidateProfile": {
@@ -2416,6 +2656,26 @@
                 "type": "null"
               }
             ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "maxItems": 30,
+            "description": "Указано кандидатом; техническим тестом не подтверждается. В публичном DTO контактоподобный текст скрыт до разрешения на контакт."
+          },
+          "softSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "maxItems": 30,
+            "description": "Указано кандидатом; техническим тестом не подтверждается. В публичном DTO контактоподобный текст скрыт до разрешения на контакт."
           }
         },
         "required": [
@@ -2427,7 +2687,9 @@
           "skills",
           "consentProcessing",
           "consentPublication",
-          "isPublic"
+          "isPublic",
+          "roles",
+          "softSkills"
         ]
       },
       "EmployerProfile": {
@@ -2545,6 +2807,26 @@
           },
           "isPublic": {
             "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "maxItems": 30,
+            "description": "Указано кандидатом; техническим тестом не подтверждается. В публичном DTO контактоподобный текст скрыт до разрешения на контакт."
+          },
+          "softSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "maxItems": 30,
+            "description": "Указано кандидатом; техническим тестом не подтверждается. В публичном DTO контактоподобный текст скрыт до разрешения на контакт."
           }
         },
         "additionalProperties": false
@@ -3034,6 +3316,26 @@
               "maxLength": 80,
               "minLength": 1
             }
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "maxItems": 30,
+            "description": "Указано кандидатом; техническим тестом не подтверждается. В публичном DTO контактоподобный текст скрыт до разрешения на контакт."
+          },
+          "softSkills": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "maxItems": 30,
+            "description": "Указано кандидатом; техническим тестом не подтверждается. В публичном DTO контактоподобный текст скрыт до разрешения на контакт."
           }
         },
         "required": [
@@ -3047,7 +3349,9 @@
           "reasons",
           "gaps",
           "demonstratedSkills",
-          "contactUnlocked"
+          "contactUnlocked",
+          "roles",
+          "softSkills"
         ]
       },
       "Demand": {
@@ -3637,6 +3941,197 @@
           "categories",
           "registryExamples"
         ]
+      },
+      "QuestionnaireInput": {
+        "type": "object",
+        "properties": {
+          "industry": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "claimedGrade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          }
+        },
+        "required": [
+          "industry",
+          "specialization",
+          "claimedGrade"
+        ],
+        "additionalProperties": false
+      },
+      "Questionnaire": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "industry": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "specialization": {
+            "type": "string",
+            "enum": [
+              "backend",
+              "frontend"
+            ]
+          },
+          "claimedGrade": {
+            "type": "string",
+            "enum": [
+              "junior",
+              "middle"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "industry",
+          "specialization",
+          "claimedGrade",
+          "createdAt"
+        ],
+        "additionalProperties": false,
+        "description": "Неизменяемая запись первичной анкеты собственного кандидата. Не является подтверждённой категорией."
+      },
+      "Application": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "vacancyId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "employerId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "candidateId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "company": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "candidateName": {
+            "type": "string"
+          },
+          "salaryFrom": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "salaryTo": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "sent",
+              "viewed",
+              "accepted",
+              "declined"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "vacancyId",
+          "employerId",
+          "candidateId",
+          "company",
+          "title",
+          "candidateName",
+          "salaryFrom",
+          "salaryTo",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false,
+        "description": "Только собственные исходящие кандидата или входящие работодателя. Контакты не дублируются; применяются отдельные правила доступа к /candidates/{id}."
+      },
+      "ApplicationStatusInput": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "viewed",
+              "accepted",
+              "declined"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "CatalogueRecommendation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Recommendation"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "rankingScope": {
+                "type": "string",
+                "const": "category"
+              },
+              "rankingVersion": {
+                "type": "string",
+                "const": "fsp-category-evidence-1.0.0"
+              }
+            },
+            "required": [
+              "rankingScope",
+              "rankingVersion"
+            ]
+          }
+        ],
+        "description": "Сравнительный порядок внутри подтверждённой категории: 95 × testScore / 100 плюс от 0 до 5 за verified ФСП, релевантные продемонстрированным навыкам. При равном балле ID по возрастанию. Отличается от подбора к потребности."
       }
     }
   },

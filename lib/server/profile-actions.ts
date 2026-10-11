@@ -1,4 +1,4 @@
-import { database, parseJson, run, timestamp } from './db';
+import { database, run, timestamp } from './db';
 import { ownProfile, profileRow } from './profiles';
 import { ApiError, bad, bool, choice, email, string, stringArray } from './security';
 import type { UserRow } from './security';
@@ -6,7 +6,7 @@ import { mockFspRegistry } from '../domain/seed';
 
 export async function updateProfile(user: UserRow, body: Record<string, unknown>) {
   const allowed = user.role === 'candidate'
-    ? ['name','title','city','phone','bio','skills','experienceYears','industry','specialization','claimedGrade','consentProcessing','consentPublication','isPublic']
+    ? ['name','title','city','phone','bio','skills','roles','softSkills','experienceYears','industry','specialization','claimedGrade','consentProcessing','consentPublication','isPublic']
     : ['company','website','description','contactName','contactEmail','contactMethod'];
   if (Object.keys(body).some(k=>!allowed.includes(k))) bad('Запрос содержит недоступные поля профиля.');
   const row = await profileRow(user.id);
@@ -22,6 +22,8 @@ export async function updateProfile(user: UserRow, body: Record<string, unknown>
     put(column,value);
   }
   if ('skills' in body) put('skills',JSON.stringify(stringArray(body.skills,'навыки')));
+  if ('roles' in body) put('roles',JSON.stringify(stringArray(body.roles,'роли')));
+  if ('softSkills' in body) put('soft_skills',JSON.stringify(stringArray(body.softSkills,'софт-скиллы')));
   if ('experienceYears' in body) {
     if (typeof body.experienceYears !== 'number' || !Number.isFinite(body.experienceYears) || body.experienceYears < 0 || body.experienceYears > 70) bad('Опыт должен быть числом от 0 до 70 лет.');
     put('experience_years',body.experienceYears);

@@ -9,7 +9,8 @@ export const users = sqliteTable('users', {
 export const profiles = sqliteTable('profiles', {
   id: text('id').primaryKey().references(() => users.id), name: text('name').notNull().default(''), title: text('title').notNull().default(''),
   city: text('city').notNull().default(''), phone: text('phone').notNull().default(''), bio: text('bio').notNull().default(''),
-  skills: text('skills').notNull().default('[]'), experienceYears: real('experience_years').notNull().default(0), industry: text('industry').notNull().default(''),
+  skills: text('skills').notNull().default('[]'), roles: text('roles').notNull().default('[]'), softSkills: text('soft_skills').notNull().default('[]'),
+  experienceYears: real('experience_years').notNull().default(0), industry: text('industry').notNull().default(''),
   specialization: text('specialization').notNull().default('backend'), claimedGrade: text('claimed_grade').notNull().default('junior'),
   verifiedGrade: text('verified_grade'), demonstratedSkills: text('demonstrated_skills').notNull().default('[]'), testScore: real('test_score').notNull().default(0),
   lastVerifiedAt: text('last_verified_at'), isPublic: integer('is_public').notNull().default(0), consentPublication: integer('consent_publication').notNull().default(0),
@@ -29,8 +30,13 @@ export const verificationTokens = sqliteTable('verification_tokens', {
 export const authAttempts = sqliteTable('auth_attempts', {
   id: text('id').primaryKey(), key: text('key').notNull(), createdAt: text('created_at').notNull(),
 }, (t) => [index('auth_attempts_window_idx').on(t.key, t.createdAt)]);
+export const questionnaireAttempts = sqliteTable('questionnaire_attempts', {
+  id: text('id').primaryKey(), userId: text('user_id').notNull().references(() => users.id), industry: text('industry').notNull(),
+  specialization: text('specialization').notNull(), claimedGrade: text('claimed_grade').notNull(), createdAt: text('created_at').notNull(),
+}, (t) => [index('questionnaire_user_idx').on(t.userId, t.createdAt)]);
 export const testAttempts = sqliteTable('test_attempts', {
   id: text('id').primaryKey(), userId: text('user_id').notNull().references(() => users.id), specialization: text('specialization').notNull(), grade: text('grade').notNull(),
+  questionnaireId: text('questionnaire_id').references(() => questionnaireAttempts.id),
   examJson: text('exam_json').notNull(), createdAt: text('created_at').notNull(), expiresAt: text('expires_at').notNull(), submittedAt: text('submitted_at'), resultJson: text('result_json'),
 }, (t) => [index('test_user_idx').on(t.userId, t.createdAt), uniqueIndex('active_test_user_idx').on(t.userId).where(sql`${t.submittedAt} IS NULL`)]);
 export const demands = sqliteTable('demands', {
@@ -48,7 +54,8 @@ export const vacancies = sqliteTable('vacancies', {
 });
 export const applications = sqliteTable('applications', {
   id: text('id').primaryKey(), vacancyId: text('vacancy_id').notNull().references(() => vacancies.id), candidateId: text('candidate_id').notNull().references(() => users.id),
-  employerId: text('employer_id').notNull().references(() => users.id), createdAt: text('created_at').notNull(),
+  employerId: text('employer_id').notNull().references(() => users.id), status: text('status').notNull().default('sent'),
+  createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull().default(''),
 }, (t) => [uniqueIndex('application_unique_idx').on(t.vacancyId, t.candidateId)]);
 export const seedState = sqliteTable('seed_state', { key: text('key').primaryKey(), createdAt: text('created_at').notNull() });
 

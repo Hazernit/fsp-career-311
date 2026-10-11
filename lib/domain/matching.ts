@@ -2,6 +2,7 @@ import type { Grade, Specialization } from './tests.ts';
 
 export const ALGORITHM_VERSION = 'fsp-evidence-match-1.0.0';
 export const MATCH_WEIGHTS = { demonstratedSkills: 55, testConfidence: 20, context: 15, declaredSkills: 5, achievements: 5 } as const;
+export const CATALOG_RANKING_VERSION = 'fsp-category-evidence-1.0.0';
 export interface FspAchievement {
   id: string;
   event: string;
@@ -33,6 +34,8 @@ export interface MatchCandidate {
   verifiedGrade: Grade | null;
   category?: string;
   skills: string[];
+  roles?: string[];
+  softSkills?: string[];
   demonstratedSkills: string[];
   testScore: number;
   industry?: string;
@@ -156,8 +159,22 @@ export function rankCandidates(candidates:MatchCandidate[],demand:Demand,options
     if(context.description) reasons.push(context.description);
     if(achievement.score>0) reasons.push(`Релевантные достижения ФСП: +${achievement.score} из максимум 5 баллов${achievement.relevant.some(a=>a.source==='mock-fsp')?' (демо-реестр)':''}.`);
     // Whitelisted DTO prevents accidental contact leakage even if callers pass a full profile.
-    return {id:candidate.id,name:candidate.name,title:candidate.title,city:candidate.city,specialization:candidate.specialization,verifiedGrade:candidate.verifiedGrade,category:`${candidate.specialization==='backend'?'Backend':'Frontend'} · ${candidate.verifiedGrade==='junior'?'Junior':'Middle'}`,skills:declared,demonstratedSkills:proven,testScore:candidate.testScore,industry:candidate.industry,bio:candidate.bio,score,achievementBonus:achievement.score,reasons,gaps,matchedSkills,fspVerified:!!candidate.fspVerified,achievements:(candidate.achievements??[]).map(a=>({...a})),contactUnlocked:!!candidate.contactUnlocked,scoreBreakdown};
+    return {id:candidate.id,name:candidate.name,title:candidate.title,city:candidate.city,specialization:candidate.specialization,verifiedGrade:candidate.verifiedGrade,category:`${candidate.specialization==='backend'?'Backend':'Frontend'} · ${candidate.verifiedGrade==='junior'?'Junior':'Middle'}`,skills:declared,roles:candidate.roles ?? [],softSkills:candidate.softSkills ?? [],demonstratedSkills:proven,testScore:candidate.testScore,industry:candidate.industry,bio:candidate.bio,score,achievementBonus:achievement.score,reasons,gaps,matchedSkills,fspVerified:!!candidate.fspVerified,achievements:(candidate.achievements??[]).map(a=>({...a})),contactUnlocked:!!candidate.contactUnlocked,scoreBreakdown};
   }).sort((a,b)=>b.score-a.score || a.id.localeCompare(b.id));
+}
+
+/** General catalogue rank is comparable only within a confirmed category, not demand fit. */
+export function rankCatalogCandidates(candidates:MatchCandidate[],options:{now?:Date|string}={}) {
+  const now=options.now instanceof Date?options.now:new Date(options.now??new Date().toISOString());
+  return candidates.filter(candidate=>['backend','frontend'].includes(candidate.specialization) && ['junior','middle'].includes(candidate.verifiedGrade ?? '')).map(candidate=>{
+    const testScore=Number.isFinite(candidate.testScore)?Math.max(0,Math.min(100,candidate.testScore)):0;
+    // A declared role, soft skill or resume stack never makes an achievement relevant.
+    const achievement=achievementPoints(candidate,normalized(candidate.demonstratedSkills),now);
+    const testConfidence=round(95*testScore/100), score=round(testConfidence+achievement.score);
+    const reasons=[`Категория подтверждена: ${candidate.specialization==='backend'?'Backend':'Frontend'} · ${candidate.verifiedGrade==='junior'?'Junior':'Middle'}.`,`Результат теста: ${testScore}/100, ${testConfidence} из 95 баллов каталога.`];
+    if(achievement.score>0) reasons.push(`ФСП по продемонстрированным компетенциям: +${achievement.score} из максимум 5 баллов${achievement.relevant.some(a=>a.source==='mock-fsp')?' (демо-реестр)':''}.`);
+    return {id:candidate.id,name:candidate.name,title:candidate.title,city:candidate.city,specialization:candidate.specialization,verifiedGrade:candidate.verifiedGrade,category:`${candidate.specialization==='backend'?'Backend':'Frontend'} · ${candidate.verifiedGrade==='junior'?'Junior':'Middle'}`,skills:normalized(candidate.skills),roles:candidate.roles ?? [],softSkills:candidate.softSkills ?? [],demonstratedSkills:normalized(candidate.demonstratedSkills),testScore,industry:candidate.industry,bio:candidate.bio,fspVerified:!!candidate.fspVerified,achievements:(candidate.achievements??[]).map(a=>({...a})),contactUnlocked:!!candidate.contactUnlocked,score,achievementBonus:achievement.score,reasons,gaps:[],matchedSkills:[],scoreBreakdown:{demonstratedSkills:0,testConfidence,context:0,declaredSkills:0,achievements:achievement.score},rankingScope:'category' as const,rankingVersion:CATALOG_RANKING_VERSION};
+  }).sort((a,b)=>a.specialization.localeCompare(b.specialization) || a.verifiedGrade!.localeCompare(b.verifiedGrade!) || b.score-a.score || a.id.localeCompare(b.id));
 }
 
 /** Deliberately simple resume-stack baseline, without demonstrated competence weighting. */

@@ -39,6 +39,7 @@ import {
   type Grade,
   type Invitation,
   type Meta,
+  type QuestionnaireRecord,
   type Specialization,
   type TestResult,
   type User,
@@ -255,12 +256,27 @@ export function CandidateProfile({ profile, user, refresh, notify }: Props) {
   const [form, setForm] = useState({
     ...profile,
     skillsText: (profile.skills || []).join(", "),
+    rolesText: (profile.roles || []).join(", "),
+    softSkillsText: (profile.softSkills || []).join(", "),
   });
   const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const set = (key: string, value: unknown) =>
     setForm((f) => ({ ...f, [key]: value }));
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    setSaveError("");
+    const roles = words(form.rolesText);
+    const softSkills = words(form.softSkillsText);
+    for (const [label, entries] of [
+      ["Роли в команде", roles],
+      ["Софт-скиллы", softSkills],
+    ] as const) {
+      if (entries.length > 30 || entries.some((entry) => entry.length > 80)) {
+        setSaveError(`${label}: до 30 значений, каждое не длиннее 80 символов.`);
+        return;
+      }
+    }
     setBusy(true);
     try {
       const saved = await api<Candidate>(
@@ -272,6 +288,8 @@ export function CandidateProfile({ profile, user, refresh, notify }: Props) {
           phone: form.phone,
           bio: form.bio,
           skills: words(form.skillsText),
+          roles,
+          softSkills,
           experienceYears: Number(form.experienceYears || 0),
           industry: form.industry,
           specialization: form.specialization,
@@ -282,14 +300,19 @@ export function CandidateProfile({ profile, user, refresh, notify }: Props) {
         },
         "PATCH",
       );
-      setForm({ ...saved, skillsText: (saved.skills || []).join(", ") });
+      setForm({
+        ...saved,
+        skillsText: (saved.skills || []).join(", "),
+        rolesText: (saved.roles || []).join(", "),
+        softSkillsText: (saved.softSkills || []).join(", "),
+      });
       await refresh();
       notify("Профиль сохранён");
     } catch (e) {
-      notify(
-        e instanceof Error ? e.message : "Не удалось сохранить профиль",
-        true,
-      );
+      const message =
+        e instanceof Error ? e.message : "Не удалось сохранить профиль";
+      setSaveError(message);
+      notify(message, true);
     } finally {
       setBusy(false);
     }
@@ -402,6 +425,30 @@ export function CandidateProfile({ profile, user, refresh, notify }: Props) {
               maxLength={1000}
             />
           </Field>
+          <div className="form-grid">
+            <Field
+              label="Роли в команде"
+              hint="Через запятую. Роли описывают ваш опыт, а не подтверждённый грейд."
+            >
+              <input
+                value={form.rolesText}
+                onChange={(e) => set("rolesText", e.target.value)}
+                placeholder="Разработчик, тимлид, аналитик"
+                maxLength={1000}
+              />
+            </Field>
+            <Field
+              label="Софт-скиллы"
+              hint="Через запятую. Указывайте навыки, которые можете подтвердить примерами."
+            >
+              <input
+                value={form.softSkillsText}
+                onChange={(e) => set("softSkillsText", e.target.value)}
+                placeholder="Командная работа, коммуникация"
+                maxLength={1000}
+              />
+            </Field>
+          </div>
           <Field label="О себе и проектах">
             <textarea
               rows={5}
@@ -411,6 +458,11 @@ export function CandidateProfile({ profile, user, refresh, notify }: Props) {
               placeholder="Какие задачи решали, за что отвечали, какой результат получили?"
             />
           </Field>
+          {saveError && (
+            <p className="inline-error" role="alert">
+              {saveError}
+            </p>
+          )}
           <div className="form-save">
             <Button busy={busy} type="submit">
               Сохранить профиль <Check size={16} />
@@ -646,8 +698,11 @@ export function CandidateAchievements({
 export function CandidateTest({ profile, user, refresh, notify }: Props) {
   const [exam, setExam] = useState<Exam | null>(null);
   const [history, setHistory] = useState<TestResult[]>([]);
+  const [questionnaires, setQuestionnaires] = useState<QuestionnaireRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [industry, setIndustry] = useState(profile.industry || "");
+  const [questionnaireError, setQuestionnaireError] = useState("");
   const [spec, setSpec] = useState<Specialization>(
     profile.specialization || "backend",
   );
@@ -662,8 +717,9 @@ export function CandidateTest({ profile, user, refresh, notify }: Props) {
     Promise.all([
       api<Exam | null>("/api/tests/current"),
       api<TestResult[]>("/api/tests/history"),
+      api<QuestionnaireRecord[]>("/api/questionnaires/history"),
     ])
-      .then(([e, h]) => {
+      .then(([e, h, records]) => {
         if (active) {
           const draft = e
             ? restoreExamDraft(e, user.id)
@@ -673,6 +729,7 @@ export function CandidateTest({ profile, user, refresh, notify }: Props) {
           setIndex(draft.index);
           setExam(e);
           setHistory(h);
+          setQuestionnaires(records);
           setLoading(false);
         }
       })
@@ -702,10 +759,22 @@ export function CandidateTest({ profile, user, refresh, notify }: Props) {
     const timer = setInterval(update, 1000);
     return () => clearInterval(timer);
   }, [exam]);
-  async function start() {
+  async function start(event: React.FormEvent) {
+    event.preventDefault();
+    setQuestionnaireError("");
+    if (!industry.trim()) {
+      setQuestionnaireError("Укажите отрасль, в которой хотите работать.");
+      return;
+    }
     setBusy(true);
     setResult(null);
     try {
+      const questionnaire = await api<QuestionnaireRecord>("/api/questionnaires", {
+        industry: industry.trim(),
+        specialization: spec,
+        claimedGrade: grade,
+      });
+      setQuestionnaires((records) => [questionnaire, ...records]);
       const e = await api<Exam>("/api/tests/start", {
         specialization: spec,
         grade,
@@ -716,7 +785,10 @@ export function CandidateTest({ profile, user, refresh, notify }: Props) {
       setAnswers(draft.answers);
       setIndex(draft.index);
     } catch (e) {
-      notify(e instanceof Error ? e.message : "Не удалось начать тест", true);
+      const message =
+        e instanceof Error ? e.message : "Не удалось начать тест";
+      setQuestionnaireError(message);
+      notify(message, true);
     } finally {
       setBusy(false);
     }
@@ -964,29 +1036,44 @@ export function CandidateTest({ profile, user, refresh, notify }: Props) {
         </section>
       )}
       <div className="test-start-grid">
-        <section className="card test-start-card">
+        <form className="card test-start-card" onSubmit={start}>
           <div className="feature-icon blue">
             <FileCheck2 size={26} />
           </div>
-          <h2>Выберите направление проверки</h2>
+          <h2>Анкета перед проверкой навыков</h2>
           <p className="muted">
-            Ваш опыт в резюме помогает выбрать уровень. Категория присваивается
-            по результату теста.
+            Укажите отрасль, специализацию и предполагаемый уровень. Анкета
+            сохранится в истории. Категория присваивается по результату теста.
           </p>
           <div className="form-grid">
+            <div className="questionnaire-industry">
+              <Field label="Отрасль" hint="Например, финтех, образование или e-commerce.">
+                <input
+                  required
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                  placeholder="В какой отрасли хотите работать?"
+                  maxLength={120}
+                  disabled={busy}
+                  aria-invalid={!!questionnaireError && !industry.trim()}
+                />
+              </Field>
+            </div>
             <Field label="Специализация">
               <select
                 value={spec}
                 onChange={(e) => setSpec(e.target.value as Specialization)}
+                disabled={busy}
               >
                 <option value="backend">Backend</option>
                 <option value="frontend">Frontend</option>
               </select>
             </Field>
-            <Field label="Уровень">
+            <Field label="Предполагаемый грейд" hint="Это ваш выбор уровня теста. Он ещё не подтверждён.">
               <select
                 value={grade}
                 onChange={(e) => setGrade(e.target.value as Grade)}
+                disabled={busy}
               >
                 <option value="junior">Junior</option>
                 <option value="middle">Middle</option>
@@ -1004,8 +1091,13 @@ export function CandidateTest({ profile, user, refresh, notify }: Props) {
               <ShieldCheck size={16} /> Серверная проверка
             </span>
           </div>
-          <Button busy={busy} onClick={start}>
-            <Play size={16} /> Начать проверку
+          {questionnaireError && (
+            <p className="inline-error" role="alert">
+              {questionnaireError}
+            </p>
+          )}
+          <Button busy={busy} type="submit">
+            <Play size={16} /> Сохранить анкету и начать тест
           </Button>
           <p className="fine-print">
             Проверяемый стек:{" "}
@@ -1015,7 +1107,7 @@ export function CandidateTest({ profile, user, refresh, notify }: Props) {
             . Изменение подтверждённой категории доступно раз в 90 дней. Первая
             неудача не блокирует попытку на уровень ниже.
           </p>
-        </section>
+        </form>
         <section className="card test-standard">
           <p className="micro-label">КАК ФОРМИРУЕТСЯ КАТЕГОРИЯ</p>
           <div className="numbered-step">
@@ -1050,50 +1142,93 @@ export function CandidateTest({ profile, user, refresh, notify }: Props) {
           </div>
         </section>
       </div>
-      <section className="card history-card">
-        <div className="card-title">
-          <h2>История результатов</h2>
-          <Badge>{history.length} попыток</Badge>
-        </div>
-        {history.length ? (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Направление</th>
-                  <th>Уровень</th>
-                  <th>Результат</th>
-                  <th>Статус</th>
-                  <th>Дата</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((h, i) => (
-                  <tr key={h.id || i}>
-                    <td>{specName(h.specialization)}</td>
-                    <td>{gradeName(h.grade)}</td>
-                    <td>
-                      <strong>{Math.round(h.score)}%</strong>
-                    </td>
-                    <td>
-                      <Badge tone={h.passed ? "green" : "amber"}>
-                        {h.passed ? "Подтверждён" : "Не пройден"}
-                      </Badge>
-                    </td>
-                    <td>{shortDate(h.submittedAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="test-history-grid">
+        <section className="card history-card questionnaire-history">
+          <div className="card-title">
+            <h2>История анкет</h2>
+            <Badge>{questionnaires.length}</Badge>
           </div>
-        ) : (
-          <Empty
-            title="Пока нет попыток"
-            text="Пройдите первую проверку — здесь появятся результаты и история подтверждения грейда."
-            icon={<BookOpen size={25} />}
-          />
-        )}
-      </section>
+          <p className="history-description">
+            Сохранённый выбор перед проверкой. Заявленный грейд не заменяет результат теста.
+          </p>
+          {questionnaires.length ? (
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Отрасль</th>
+                    <th>Специализация</th>
+                    <th>Заявленный грейд</th>
+                    <th>Дата</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {questionnaires.map((record) => (
+                    <tr key={record.id}>
+                      <td>{record.industry}</td>
+                      <td>{specName(record.specialization)}</td>
+                      <td><Badge>{gradeName(record.claimedGrade)}</Badge></td>
+                      <td>{new Date(record.createdAt).toLocaleString("ru-RU", {
+                        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+                      })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <Empty
+              title="Первая анкета впереди"
+              text="Заполните анкету перед тестом. Её ответы сохранятся здесь и останутся доступными после перезагрузки."
+              icon={<BookOpen size={25} />}
+            />
+          )}
+        </section>
+        <section className="card history-card">
+          <div className="card-title">
+            <h2>История результатов</h2>
+            <Badge>{history.length} попыток</Badge>
+          </div>
+          {history.length ? (
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Направление</th>
+                    <th>Уровень</th>
+                    <th>Результат</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((h, i) => (
+                    <tr key={h.id || i}>
+                      <td>{specName(h.specialization)}</td>
+                      <td>{gradeName(h.grade)}</td>
+                      <td>
+                        <strong>{Math.round(h.score)}%</strong>
+                      </td>
+                      <td>
+                        <Badge tone={h.passed ? "green" : "amber"}>
+                          {h.passed ? "Подтверждён" : "Не пройден"}
+                        </Badge>
+                      </td>
+                      <td>{shortDate(h.submittedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <Empty
+              title="Пока нет попыток"
+              text="Пройдите первую проверку — здесь появятся результаты и история подтверждения грейда."
+              icon={<BookOpen size={25} />}
+            />
+          )}
+        </section>
+      </div>
     </>
   );
 }

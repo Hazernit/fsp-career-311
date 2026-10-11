@@ -1,11 +1,11 @@
-import { all, one, parseJson, timestamp } from './db';
+import { all, one, parseJson } from './db';
 import type { MatchCandidate } from '../domain/matching';
 import type { UserRow } from './security';
 import { ApiError } from './security';
 import { redactContactText } from './privacy';
 
 export interface ProfileRow {
-  id: string; name: string; title: string; city: string; phone: string; bio: string; skills: string; experience_years: number; industry: string;
+  id: string; name: string; title: string; city: string; phone: string; bio: string; skills: string; roles: string; soft_skills: string; experience_years: number; industry: string;
   specialization: 'backend'|'frontend'; claimed_grade: 'junior'|'middle'; verified_grade: 'junior'|'middle'|null;
   demonstrated_skills: string; test_score: number; last_verified_at: string|null; is_public: number; consent_publication: number;
   fsp_id: string|null; fsp_verified: number; achievements: string; company: string; website: string; description: string; contact_name: string; contact_email: string; contact_method: string;
@@ -22,6 +22,7 @@ export function candidateBase(row: ProfileRow, revealFreeformContacts = false) {
   return {
     id: row.id, name: safe(row.name), title: safe(row.title), city: safe(row.city), bio: safe(row.bio), specialization: row.specialization, claimedGrade: row.claimed_grade,
     verifiedGrade: row.verified_grade, category: category(row.specialization, row.verified_grade), skills: parseJson<string[]>(row.skills, []).map(safe),
+    roles: parseJson<string[]>(row.roles, []).map(safe), softSkills: parseJson<string[]>(row.soft_skills, []).map(safe),
     demonstratedSkills: parseJson<string[]>(row.demonstrated_skills, []), testScore: row.test_score, industry: safe(row.industry),
     experienceYears: row.experience_years, fspVerified: !!row.fsp_verified, achievements: parseJson(row.achievements, []),
     lastVerifiedAt: row.last_verified_at, synthetic: !!row.is_synthetic,
@@ -45,7 +46,7 @@ export async function publicCandidate(candidateId: string, employerId: string) {
   if ((!row.is_public || !row.consent_publication) && !access) throw new ApiError(404, 'CANDIDATE_NOT_FOUND', 'Кандидат не найден.');
   return { ...candidateBase(row,access), contactUnlocked: access, contacts: access ? { email: row.email, phone: row.phone } : null };
 }
-export async function matchingCandidates(employerId: string): Promise<MatchCandidate[]> {
+export async function matchingCandidates(): Promise<MatchCandidate[]> {
   const rows = await all<ProfileRow>(`SELECT p.* FROM profiles p JOIN users u ON u.id = p.id WHERE u.role = 'candidate' AND u.email_verified = 1 AND u.consent_processing = 1 AND p.is_public = 1 AND p.consent_publication = 1 AND p.verified_grade IS NOT NULL ORDER BY p.id`);
   // Never copy database rows into public ranking DTOs: contacts are excluded structurally.
   return rows.map(row => ({ ...candidateBase(row), category: category(row.specialization, row.verified_grade) || undefined, contactUnlocked: false }));

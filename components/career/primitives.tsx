@@ -314,6 +314,17 @@ export function CandidateCard({
         <span className="micro-label">ПОДТВЕРЖДЕНО ТЕСТОМ</span>
         <SkillTags skills={candidate.demonstratedSkills} verified />
       </div>
+      {(candidate.roles?.length > 0 || candidate.softSkills?.length > 0) && (
+        <div className="candidate-declared-traits">
+          {!!candidate.roles?.length && (
+            <p><span>Роли:</span> {candidate.roles.join(", ")}</p>
+          )}
+          {!!candidate.softSkills?.length && (
+            <p><span>Софт-скиллы:</span> {candidate.softSkills.join(", ")}</p>
+          )}
+          <small>Указаны кандидатом в резюме</small>
+        </div>
+      )}
       {!!candidate.reasons?.length && (
         <div className="match-reasons">
           {(candidate.reasons || []).slice(0, 3).map((reason) => (

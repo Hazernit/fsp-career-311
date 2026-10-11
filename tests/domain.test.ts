@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateExam, evaluateExam, publicExam, canStartExam, assessmentCategories } from '../lib/domain/tests.ts';
-import { rankCandidates, extractDemandSkills, normalizeSkill } from '../lib/domain/matching.ts';
+import { rankCandidates, rankCatalogCandidates, extractDemandSkills, normalizeSkill } from '../lib/domain/matching.ts';
 import { syntheticCandidates } from '../lib/domain/seed.ts';
+import { redactContactText } from '../lib/server/privacy.ts';
 
 const categories=assessmentCategories;
 test('4000 reproducible variants have unique options, identical blueprints and private keys',()=>{
@@ -145,4 +146,46 @@ test('synthetic demonstrated skills belong to their category blueprint; scores p
     assert(candidate.demonstratedSkills.every(skill=>available.has(skill)));
     assert.equal(candidate.testScore,Math.round((6+candidate.demonstratedSkills.length)/12*100));
   }
+});
+
+test('catalogue rank preserves category and test evidence, bounds FSP and resolves ties stably',()=>{
+  const base={...syntheticCandidates[0],specialization:'backend' as const,verifiedGrade:'junior' as const,testScore:100,demonstratedSkills:['SQL'],roles:['Backend'],softSkills:['Командная работа']};
+  const award={id:'award',event:'Demo',discipline:'SQL',date:'2026-01-01',result:'Первое место',place:1,source:'mock-fsp' as const,verified:true,skills:['SQL']};
+  const high={...base,id:'strong',fspVerified:false,achievements:[]};
+  const lower={...base,id:'lower',testScore:92,fspVerified:true,achievements:Array.from({length:100},(_,i)=>({...award,id:String(i)}))};
+  const a={...high,id:'a'},b={...high,id:'b'};
+  const unconfirmed={...lower,id:'unconfirmed',verifiedGrade:null};
+  const rank=rankCatalogCandidates([lower,b,unconfirmed,high,a],{now:'2026-10-11'});
+  assert.deepEqual(rank.map(c=>c.id),['a','b','strong','lower']);
+  assert.equal(rank[3].achievementBonus,5);assert.equal(rank[3].score,92.4);
+  assert.deepEqual(rank.map(c=>c.id),rankCatalogCandidates([a,high,unconfirmed,b,lower],{now:'2026-10-11'}).map(c=>c.id));
+  assert.equal(rankCatalogCandidates([{...lower,achievements:[{...award,verified:false}]}],{now:'2026-10-11'})[0].achievementBonus,0);
+  assert.equal(rankCatalogCandidates([{...lower,achievements:[{...award,skills:['React']}]}],{now:'2026-10-11'})[0].achievementBonus,0);
+  assert.equal(rankCatalogCandidates([{...lower,achievements:[{...award,date:'2027-01-01'}]}],{now:'2026-10-11'})[0].achievementBonus,0);
+  assert.ok(rank.every(c=>c.score<=100 && c.rankingScope==='category' && c.reasons.length));
+  const privateInput={...a,email:'hidden@example.invalid',phone:'+79999999999',password_hash:'secret'};
+  const serialized=JSON.stringify(rankCatalogCandidates([privateInput]));
+  for(const hidden of ['hidden@example.invalid','+79999999999','password_hash']) assert.ok(!serialized.includes(hidden));
+});
+
+test('public resume text blocks Telegram contact bypasses in bio, title, roles and soft skills without removing technical terms',()=>{
+  const fields={
+    bio:'Python, TypeScript и SQL. Связаться: https://t.me/bio_owner?start=resume или secret@example.invalid, +7 999 123-45-67.',
+    title:'Backend-разработчик, Telegram: telegram.me/title_owner',
+    roles:['Разработчик — @roles_owner','Тимлид: https://telegram.me/+private_invite'],
+    softSkills:['Коммуникация (@skills_owner)','Командная работа: T.ME/skills_contact'],
+  };
+  const publicText=JSON.stringify({
+    bio:redactContactText(fields.bio),
+    title:redactContactText(fields.title),
+    roles:fields.roles.map(redactContactText),
+    softSkills:fields.softSkills.map(redactContactText),
+  });
+  for(const contact of ['bio_owner','title_owner','roles_owner','private_invite','skills_owner','skills_contact','secret@example.invalid','999 123-45-67']) {
+    assert.ok(!publicText.includes(contact),`Hidden contact escaped through resume: ${contact}`);
+  }
+  assert.match(publicText,/\[контакт скрыт\]/);
+  for(const term of ['Python','TypeScript','SQL','Backend','Командная работа']) assert.ok(publicText.includes(term));
+  const technical='TypeScript, React, @types/node, @angular/core, @Injectable()';
+  assert.equal(redactContactText(technical),technical);
 });

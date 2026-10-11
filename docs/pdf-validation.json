@@ -1,9 +1,199 @@
 {
+  "kind": "local-api-generated-pdf-text-validation",
+  "generatedAt": "2026-10-11T13:12:34.241876+00:00",
   "passed": true,
+  "checksPassed": 24,
+  "checksFailed": 0,
+  "source": {
+    "apiResults": "tmp/api-v103/api-local.json",
+    "apiResultsSha256": "904bf0d2550e83ee14c20584274edc4c45bb38ac320d61152a934cc4916cebf9",
+    "apiChecksPassed": 22,
+    "apiChecksFailed": 0,
+    "data": "Synthetic local integration-test profiles"
+  },
+  "extractor": {
+    "tool": "Poppler pdftotext -layout and pdfinfo",
+    "version": "pdftotext version 26.05.0"
+  },
+  "scope": "Full extracted text from all pages of three PDFs; privacy before contact authorization, expected authorized email/phone, and self-declared roles/soft skills.",
+  "visualReviewPerformed": false,
+  "limitations": "Text and metadata checks only. Visual layout was not evaluated. Messenger contacts in authorized PDFs are recorded as observations and are not required to remain visible.",
+  "files": [
+    {
+      "file": "tmp/api-v103/profile-locked.pdf",
+      "mode": "locked",
+      "sha256": "29ba29385e674ce16a68abb76f63a179e3698fb8eaac0576a931eb6365bbc424",
+      "bytes": 9285,
+      "pages": 1,
+      "extractedTextSha256": "0c8ba43aeb2d88649e3d75af81a8ec93ad498299230ef063905c7d358191686d",
+      "observations": {
+        "emailPresent": false,
+        "phonePresent": false,
+        "messengerContactsPresent": {
+          "@career_contacts_311": false,
+          "https://t.me/career_contacts_311": false,
+          "https://telegram.me/team_311": false
+        }
+      },
+      "messengerPresenceRequired": null
+    },
+    {
+      "file": "tmp/api-v103/profile-unlocked.pdf",
+      "mode": "unlocked",
+      "sha256": "fc173fef09d4af001d5c74149f6d6991a9b0185e465fda66a70a0d8ed0390264",
+      "bytes": 10354,
+      "pages": 1,
+      "extractedTextSha256": "c0274cff5bdf8b376416ef9aa525a3f2acd3d2f4541fc8305aff960197b745cf",
+      "observations": {
+        "emailPresent": true,
+        "phonePresent": true,
+        "messengerContactsPresent": {
+          "@career_contacts_311": true,
+          "https://t.me/career_contacts_311": true,
+          "https://telegram.me/team_311": true
+        }
+      },
+      "messengerPresenceRequired": false
+    },
+    {
+      "file": "tmp/api-v103/profile-own.pdf",
+      "mode": "own",
+      "sha256": "a989031e3a99123797bc19975bdcbdd72cd3109f832fdc084ec639d91c4513f1",
+      "bytes": 10656,
+      "pages": 1,
+      "extractedTextSha256": "5a526897fa1b48b82e6a4ab92f88d51dfd316e5a78482d9ab3de2599e315aca0",
+      "observations": {
+        "emailPresent": true,
+        "phonePresent": true,
+        "messengerContactsPresent": {
+          "@career_contacts_311": true,
+          "https://t.me/career_contacts_311": true,
+          "https://telegram.me/team_311": true
+        }
+      },
+      "messengerPresenceRequired": false
+    }
+  ],
   "checks": [
-    "email absent in locked PDF",
-    "phone absent in locked PDF",
-    "email present in employer-authorized PDF",
-    "phone present in employer-authorized PDF"
+    {
+      "file": "profile-locked.pdf",
+      "check": "PDF parses, has pages and extractable Cyrillic text",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Expected self-declared role is in the roles section",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Expected self-declared soft skill is in the soft-skills section",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Roles and soft skills are labelled self-declared, not test-verified",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Expected email is absent from the entire locked PDF",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Expected phone is absent from the entire locked PDF",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Telegram contact is absent from entire locked PDF: @career_contacts_311",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Telegram contact is absent from entire locked PDF: https://t.me/career_contacts_311",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Telegram contact is absent from entire locked PDF: https://telegram.me/team_311",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Contacts section explicitly says contacts are hidden",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Contact-like roles are masked",
+      "passed": true
+    },
+    {
+      "file": "profile-locked.pdf",
+      "check": "Contact-like soft skills are masked",
+      "passed": true
+    },
+    {
+      "file": "profile-unlocked.pdf",
+      "check": "PDF parses, has pages and extractable Cyrillic text",
+      "passed": true
+    },
+    {
+      "file": "profile-unlocked.pdf",
+      "check": "Expected self-declared role is in the roles section",
+      "passed": true
+    },
+    {
+      "file": "profile-unlocked.pdf",
+      "check": "Expected self-declared soft skill is in the soft-skills section",
+      "passed": true
+    },
+    {
+      "file": "profile-unlocked.pdf",
+      "check": "Roles and soft skills are labelled self-declared, not test-verified",
+      "passed": true
+    },
+    {
+      "file": "profile-unlocked.pdf",
+      "check": "Expected email is shown in the authorized contacts section",
+      "passed": true
+    },
+    {
+      "file": "profile-unlocked.pdf",
+      "check": "Expected phone is shown in the authorized contacts section",
+      "passed": true
+    },
+    {
+      "file": "profile-own.pdf",
+      "check": "PDF parses, has pages and extractable Cyrillic text",
+      "passed": true
+    },
+    {
+      "file": "profile-own.pdf",
+      "check": "Expected self-declared role is in the roles section",
+      "passed": true
+    },
+    {
+      "file": "profile-own.pdf",
+      "check": "Expected self-declared soft skill is in the soft-skills section",
+      "passed": true
+    },
+    {
+      "file": "profile-own.pdf",
+      "check": "Roles and soft skills are labelled self-declared, not test-verified",
+      "passed": true
+    },
+    {
+      "file": "profile-own.pdf",
+      "check": "Expected email is shown in the authorized contacts section",
+      "passed": true
+    },
+    {
+      "file": "profile-own.pdf",
+      "check": "Expected phone is shown in the authorized contacts section",
+      "passed": true
+    }
   ]
 }
